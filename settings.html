@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - RyxIDE</title>
+
+    <!-- Font Awesome (for icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Our Shared Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div id="settings-wrapper">
+        <header id="dashboard-header">
+            <div class="logo">
+                <i class="fa-brands fa-react"></i> <!-- Placeholder Logo -->
+                <h1>RyxIDE</h1>
+            </div>
+            <nav class="main-nav">
+                <a href="index.html">Projects</a>
+                <a href="settings.html" class="active">Settings</a>
+            </nav>
+        </header>
+
+        <main id="settings-container">
+            <h1>Settings</h1>
+
+            <!-- Appearance Section -->
+            <section class="settings-card">
+                <h2><i class="fa-solid fa-palette"></i> Appearance</h2>
+                <div class="setting-item">
+                    <label for="theme-select">Theme</label>
+                    <select id="theme-select">
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Editor Section -->
+            <section class="settings-card">
+                <h2><i class="fa-solid fa-code"></i> Editor</h2>
+                <div class="setting-item">
+                    <label for="font-size-input">Font Size</label>
+                    <input type="number" id="font-size-input" min="10" max="24" value="14">
+                </div>
+                <div class="setting-item">
+                    <label for="keybinding-select">Keybindings</label>
+                    <select id="keybinding-select">
+                        <option value="vscode">VS Code</option>
+                        <option value="sublime">Sublime Text</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Danger Zone Section -->
+            <section class="settings-card danger-zone">
+                <h2><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h2>
+                <div class="setting-item">
+                    <p>These actions are irreversible. Please be certain.</p>
+                    <button id="clear-all-data-btn" class="danger-btn">Delete All Projects & Settings</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Our Custom JavaScript for this page -->
+    <script type="module" src="js/settings.js"></script>
+</body>
+</html>
