@@ -5,8 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IDE - RyxIDE</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
 </head>
 <body>
 <div id="ide-container" class="ide-container">
@@ -77,30 +79,26 @@
 </div>
 </div>
 </aside>
-<div id="main-content">
 <main id="editor-group">
 <div id="editor-tabs" class="editor-tabs"></div>
 <div id="editor-container"></div>
 </main>
 <section id="panel">
 <div id="panel-tabs" class="panel-tabs">
-<div class="tab active" data-panel="preview">PREVIEW</div>
+<div class="tab active" data-panel="terminal">TERMINAL</div>
+<div class="tab" data-panel="preview">PREVIEW</div>
 <div class="tab" data-panel="problems">PROBLEMS</div>
-<div class="tab" data-panel="terminal">TERMINAL</div>
 </div>
 <div class="panel-content">
-<div id="preview-container" class="panel-view active">
+<div id="terminal-container" class="panel-view active"></div>
+<div id="preview-container" class="panel-view">
 <iframe id="preview-iframe" sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock allow-popups allow-presentation allow-same-origin"></iframe>
 </div>
 <div id="problems-container" class="panel-view">
 <p class="p-2">No problems have been detected.</p>
 </div>
-<div id="terminal-container" class="panel-view">
-<p class="p-2">Terminal is currently disabled.</p>
-</div>
 </div>
 </section>
-</div>
 <footer id="status-bar">
 <div class="status-left">
 <button id="run-btn" class="run-btn"><i class="fa-solid fa-play"></i> Run</button>
@@ -113,6 +111,7 @@
 </footer>
 <div id="mobile-overlay" class="mobile-overlay"></div>
 </div>
-<script type="module" src="js/ide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+<script type="module" src="js/ide.js" defer></script>
 </body>
 </html>
