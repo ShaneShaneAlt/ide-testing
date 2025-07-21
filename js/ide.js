@@ -1,4 +1,5 @@
 import { getProject, saveProject } from './db.js';
+import { Terminal } from 'https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js';
 console.log('[RDE] ide.js module loaded');
 let editor;
 let currentProject;
@@ -9,33 +10,6 @@ const ideContainer=document.getElementById('ide-container');
 const editorTabsContainer=document.getElementById('editor-tabs');
 const searchInput=document.getElementById('search-input');
 const searchResultsContainer=document.getElementById('search-results');
-function loadScript(src, globalVarName) {
-console.log(`[RDE] Request to load script: ${src}`);
-return new Promise((resolve, reject) => {
-if (window[globalVarName]) {
-console.log(`[RDE] Script ${src} already loaded (global '${globalVarName}' exists).`);
-resolve();
-return;
-}
-const script=document.createElement('script');
-script.src=src;
-script.onload = () => {
-console.log(`[RDE] Script ${src} finished loading.`);
-if (window[globalVarName]) {
-console.log(`[RDE] Global '${globalVarName}' is now available.`);
-resolve();
-} else {
-console.error(`[RDE] Script ${src} loaded but global '${globalVarName}' is not defined.`);
-reject(new Error(`Failed to define ${globalVarName}`));
-}
-};
-script.onerror = () => {
-console.error(`[RDE] Failed to load script: ${src}`);
-reject(new Error(`Failed to load script: ${src}`));
-};
-document.head.appendChild(script);
-});
-}
 window.addEventListener('DOMContentLoaded', async ()=>{
 console.log('[RDE] DOMContentLoaded event fired.');
 const urlParams=new URLSearchParams(window.location.search);
@@ -55,7 +29,7 @@ console.log('[RDE] Initializing editor...');
 await initializeEditor();
 console.log('[RDE] Editor initialized.');
 console.log('[RDE] Initializing terminal...');
-await initializeTerminal();
+initializeTerminal();
 console.log('[RDE] Terminal initialized.');
 console.log('[RDE] Rendering file tree...');
 renderFileTree();
@@ -113,11 +87,10 @@ resolve();
 });
 });
 }
-async function initializeTerminal(){
+function initializeTerminal(){
 console.log('[RDE:Terminal] Starting initialization.');
 try {
-await loadScript('https://cdn.jsdelivr.net/npm/xterm@5.3.0/dist/xterm.js', 'Terminal');
-console.log('[RDE:Terminal] Xterm.js script loaded, creating terminal instance.');
+console.log('[RDE:Terminal] Terminal object imported, creating instance.');
 term = new Terminal({
 cursorBlink: true,
 theme: {
