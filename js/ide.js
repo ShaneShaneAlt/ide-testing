@@ -29,8 +29,8 @@ require.config({ paths:{ 'vs':'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0
 window.MonacoEnvironment={
 getWorkerUrl:function (workerId, label){
 return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-                self.MonacoEnvironment = { baseUrl: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/' };
-                importScripts('https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/base/worker/workerMain.js');`
+self.MonacoEnvironment = { baseUrl: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/' };
+importScripts('https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/base/worker/workerMain.js');`
 )}`;
 }
 };
@@ -58,7 +58,9 @@ openFileInEditor(fileItem.dataset.fileId);
 });
 ideContainer.addEventListener('click', (event)=>{
 const action=event.target.dataset.action;
+const view=event.target.dataset.view;
 if(action==='toggle-sidebar'){
+setActiveSidebarView(view);
 ideContainer.classList.add('sidebar-visible');
 }
 if(action==='close-sidebar'||event.target.id==='mobile-overlay'){
@@ -69,17 +71,52 @@ if(action==='toggle-panel'){
 ideContainer.classList.toggle('panel-visible');
 }
 });
+document.getElementById('panel-tabs').addEventListener('click', (event)=>{
+const tab=event.target.closest('.tab');
+if(tab){
+setActivePanel(tab.dataset.panel);
+}
+});
+}
+function setActiveSidebarView(viewName){
+const sidebarTitle=document.getElementById('sidebar-title');
+const activityBarIcons=document.querySelectorAll('#activity-bar i[data-view]');
+const sidebarViews=document.querySelectorAll('#sidebar-content .sidebar-view');
+sidebarTitle.textContent=viewName.toUpperCase();
+activityBarIcons.forEach(icon=>icon.classList.toggle('active', icon.dataset.view===viewName));
+sidebarViews.forEach(view=>view.classList.toggle('active', view.id===`${viewName}-view`));
+}
+function setActivePanel(panelName){
+document.querySelectorAll('#panel-tabs .tab').forEach(tab=>{
+tab.classList.toggle('active', tab.dataset.panel===panelName);
+});
+document.querySelectorAll('.panel-content .panel-view').forEach(view=>{
+view.classList.toggle('active', view.id===`${panelName}-container`);
+});
 }
 function renderFileTree(){
 const fileTreeContainer=document.getElementById('file-tree');
 fileTreeContainer.innerHTML='';
 currentProject.files.forEach(file=>{
 const fileElement=document.createElement('div');
-fileElement.textContent=file.name;
+const iconClass=getFileIcon(file.name);
+fileElement.className='file-item';
 fileElement.dataset.fileId=file.id;
-fileElement.className='file-item unselectable';
+fileElement.innerHTML=`<i class="${iconClass}"></i><span>${file.name}</span>`;
 fileTreeContainer.appendChild(fileElement);
 });
+}
+function getFileIcon(filename){
+const extension=filename.split('.').pop();
+switch(extension){
+case 'html':return 'fa-brands fa-html5';
+case 'css':return 'fa-brands fa-css3-alt';
+case 'js':return 'fa-brands fa-square-js';
+case 'py':return 'fa-brands fa-python';
+case 'php':return 'fa-brands fa-php';
+case 'ts':return 'fa-brands fa-node-js';
+default:return 'fa-solid fa-file';
+}
 }
 function openFileInEditor(fileId){
 document.querySelectorAll('#file-tree .file-item').forEach(el=>{
@@ -109,6 +146,7 @@ const language=editor.getModel().getLanguageId();
 const previewFrame=document.getElementById('preview-iframe');
 console.log(`Running code in language: ${language}`);
 ideContainer.classList.add('panel-visible');
+setActivePanel('preview');
 if(language==='html'){
 const doc=previewFrame.contentWindow.document;
 doc.open();
