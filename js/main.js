@@ -48,10 +48,13 @@ function createProjectCard(project) {
     card.className = 'project-card';
     card.dataset.projectId = project.id; // Store project ID on the element
 
+    // A more modern card look
     card.innerHTML = `
-        <i class="fa-brands fa-html5"></i>
-        <h3>${project.name}</h3>
-        <p>Last modified: ${new Date(project.lastModified).toLocaleDateString()}</p>
+        <div class="card-icon"><i class="fa-brands fa-html5"></i></div>
+        <div class="card-content">
+            <h3>${project.name}</h3>
+            <p>Last modified: ${new Date(project.lastModified).toLocaleDateString()}</p>
+        </div>
     `;
     
     // Navigate to IDE page on click
@@ -66,8 +69,10 @@ async function handleCreateProject() {
     const projectName = prompt("Enter a name for your new project:", "My Awesome App");
     if (projectName) {
         try {
-            await createNewProject(projectName, 'html');
-            loadProjects(); // Reload the project list to show the new one
+            // THE FIX: Capture the returned ID from the creation function
+            const newProjectId = await createNewProject(projectName, 'html');
+            // Now, redirect the user to the IDE page for that new project
+            window.location.href = `ide.html?project=${newProjectId}`;
         } catch (error) {
             console.error("Failed to create project:", error);
             alert("Error: Could not create the project.");
