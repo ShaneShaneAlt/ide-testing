@@ -529,8 +529,10 @@ overflow:auto;
 display:block;
 }
 #terminal-container{
-padding:0.5rem;
 height:100%;
+--color:var(--text-primary);
+--background:var(--bg-secondary);
+--animation-duration:0;
 }
 #preview-iframe{
 width:100%;
@@ -641,8 +643,8 @@ opacity:0.5;
 @media (max-width: 800px){
 .ide-container{
 grid-template-columns:50px 1fr;
-grid-template-rows:1fr 30px;
-grid-template-areas:"activity editor" "activity status";
+grid-template-rows:auto 1fr auto;
+grid-template-areas:"activity editor" "activity editor" "activity status";
 }
 #side-bar{
 position:fixed;
