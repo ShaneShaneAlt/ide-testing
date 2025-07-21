@@ -8,6 +8,15 @@ const ideContainer=document.getElementById('ide-container');
 const editorTabsContainer=document.getElementById('editor-tabs');
 const searchInput=document.getElementById('search-input');
 const searchResultsContainer=document.getElementById('search-results');
+function loadScript(src) {
+return new Promise((resolve, reject) => {
+const script=document.createElement('script');
+script.src=src;
+script.onload=resolve;
+script.onerror=reject;
+document.head.appendChild(script);
+});
+}
 window.addEventListener('DOMContentLoaded', async ()=>{
 const urlParams=new URLSearchParams(window.location.search);
 const projectId=parseInt(urlParams.get('project'), 10);
@@ -19,8 +28,8 @@ return;
 currentProject=await getProject(projectId);
 if(currentProject){
 document.title=`${currentProject.name} - RyxIDE`;
-initializeEditor();
-initializeTerminal();
+await initializeEditor();
+await initializeTerminal();
 renderFileTree();
 if(currentProject.files.length>0){
 openFileInEditor(currentProject.files[0].id);
@@ -31,7 +40,12 @@ window.location.href='index.html';
 }
 setupUIEventListeners();
 });
-function initializeEditor(){
+async function initializeEditor(){
+return new Promise((resolve) => {
+if(typeof monaco !== 'undefined'){
+resolve();
+return;
+}
 require.config({ paths:{ 'vs':'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
 window.MonacoEnvironment={
 getWorkerUrl:function (workerId, label){
@@ -58,9 +72,14 @@ model.onDidChangeContent(() => {
 updateProblemsPanel();
 });
 });
+resolve();
+});
 });
 }
-function initializeTerminal(){
+async function initializeTerminal(){
+if (typeof Terminal === 'undefined') {
+await loadScript('https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js');
+}
 term = new Terminal({
 cursorBlink: true,
 theme: {
@@ -219,7 +238,11 @@ default: return 'plaintext';
 function updateProblemsPanel() {
 const problemsContainer = document.getElementById('problems-container');
 const model = editor.getModel();
-const markers = monaco.editor.getModelMarkers({ owner: model.getLanguageId() });
+if (!model) {
+problemsContainer.innerHTML = '<p class="p-2">No active file to analyze.</p>';
+return;
+}
+const markers = monaco.editor.getModelMarkers({ resource: model.uri });
 if (markers.length === 0) {
 problemsContainer.innerHTML = '<p class="p-2">No problems have been detected.</p>';
 return;
@@ -262,7 +285,6 @@ if(activeFileId){
 openFileInEditor(activeFileId);
 } else {
 editor.setModel(null);
-editor.setValue('// All files closed.');
 document.getElementById('language-status').textContent = '';
 renderFileTabs();
 }
