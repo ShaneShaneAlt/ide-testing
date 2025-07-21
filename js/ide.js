@@ -6,8 +6,8 @@ let openFileTabs=[];
 let activeFileId=null;
 let term;
 const runtimes = {
-python: { loaded: false, instance: null },
-php: { loaded: false, instance: null }
+python: { loaded: false, instance: null, loading: false },
+php: { loaded: false, instance: null, loading: false }
 };
 const ideContainer=document.getElementById('ide-container');
 const editorTabsContainer=document.getElementById('editor-tabs');
@@ -87,10 +87,14 @@ if (typeof jQuery === 'undefined' || typeof jQuery.fn.terminal === 'undefined') 
 logToIdeConsole('jQuery or jQuery.terminal not found.', 'error');
 return;
 }
-term = $('#terminal-container div').terminal(async (command, term) => {
+term = $('#terminal-container div').terminal(async (command) => {
+if(command !== ''){
+logToIdeConsole(`Terminal command: ${command}`);
+term.echo(`Executing: ${command}...`);
+}
 }, {
-greetings: 'RyxIDE Terminal',
-prompt: '$ ',
+greetings: 'RDE Console',
+prompt: '> '
 });
 logToIdeConsole('jQuery Terminal instance created.');
 } catch (error) {
@@ -112,23 +116,34 @@ if(fileItem){
 openFileInEditor(fileItem.dataset.fileId);
 }
 });
-ideContainer.addEventListener('click', (event)=>{
-const action=event.target.dataset.action;
-const view=event.target.dataset.view;
-if(action==='toggle-sidebar'){
-ideContainer.classList.toggle('sidebar-collapsed');
-}
-if(action==='close-sidebar'||event.target.id==='mobile-overlay'){
+document.getElementById('activity-bar').addEventListener('click', (event) => {
+const target = event.target.closest('i[data-action="toggle-sidebar"]');
+if (target) {
+const currentView = target.dataset.view;
+if (ideContainer.classList.contains('sidebar-collapsed') || document.querySelector(`#${currentView}-view`).classList.contains('active') === false) {
+setActiveSidebarView(currentView);
+ideContainer.classList.remove('sidebar-collapsed');
+} else {
 ideContainer.classList.add('sidebar-collapsed');
 }
-if(action==='toggle-panel'){
-ideContainer.classList.toggle('panel-collapsed');
 }
+});
+document.getElementById('side-bar').addEventListener('click', (event) => {
+const target = event.target.closest('i[data-action="close-sidebar"]');
+if (target) {
+ideContainer.classList.add('sidebar-collapsed');
+}
+});
+document.getElementById('panel-toggle-btn').addEventListener('click', () => {
+ideContainer.classList.toggle('panel-collapsed');
 });
 document.getElementById('panel-tabs').addEventListener('click', (event)=>{
 const tab=event.target.closest('.tab');
 if(tab){
 setActivePanel(tab.dataset.panel);
+if (ideContainer.classList.contains('panel-collapsed')) {
+ideContainer.classList.remove('panel-collapsed');
+}
 }
 });
 editorTabsContainer.addEventListener('click', (event) => {
@@ -147,19 +162,22 @@ btn.addEventListener('click', () => installRuntime(btn.dataset.runtime, btn));
 });
 }
 async function installRuntime(runtimeName, button){
+if(runtimes[runtimeName]?.loading || runtimes[runtimeName]?.loaded) return;
 button.textContent = 'Installing...';
 button.disabled = true;
+runtimes[runtimeName].loading = true;
 logToIdeConsole(`Installing ${runtimeName} runtime...`);
 try {
 if(runtimeName === 'python') {
 const pyodideSrc = 'https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js';
-await import(pyodideSrc);
+const { loadPyodide } = await import(pyodideSrc);
 runtimes.python.instance = await loadPyodide();
 runtimes.python.loaded = true;
 } else if (runtimeName === 'php') {
-const phpWasmSrc = 'https://cdn.jsdelivr.net/npm/php-wasm/PhpWasm.mjs';
-const { PhpWasm } = await import(phpWasmSrc);
-runtimes.php.instance = await PhpWasm.load('8.2', {นักพัฒนา: true});
+const { PhpWeb } = window.PlaygroundClient;
+runtimes.php.instance = await PhpWeb.load('8.2', {
+loadPHP: ['php-sqlite3']
+});
 runtimes.php.loaded = true;
 }
 logToIdeConsole(`${runtimeName} runtime installed successfully.`);
@@ -167,6 +185,8 @@ button.textContent = 'Installed';
 } catch(error) {
 logToIdeConsole(`Failed to install ${runtimeName}: ${error.message}`, 'error');
 button.textContent = 'Error';
+runtimes[runtimeName].loading = false;
+button.disabled = false;
 }
 }
 function performSearch(query) {
@@ -278,6 +298,7 @@ problemsContainer.innerHTML = '';
 const model = editor.getModel();
 if (!model) return;
 const markers = monaco.editor.getModelMarkers({ resource: model.uri });
+setActivePanel('problems');
 if (markers.length === 0) {
 problemsContainer.innerHTML = '<p class="p-2">No problems have been detected.</p>';
 return;
@@ -327,7 +348,6 @@ const language=model.getLanguageId();
 logToIdeConsole(`Executing code as ${language}...`);
 ideContainer.classList.remove('panel-collapsed');
 term.clear();
-setActivePanel('terminal');
 switch(language) {
 case 'html':
 runHtmlProject();
@@ -363,21 +383,24 @@ const previewFrame=document.getElementById('preview-iframe');
 previewFrame.srcdoc = finalHtml;
 }
 function runJavascript(code){
-setActivePanel('console');
+setActivePanel('terminal');
 logToIdeConsole('Running Javascript code...');
+term.echo("Running JavaScript...");
 try {
 const result = (new Function(code))();
-logToIdeConsole(`Execution finished. Result: ${result}`);
+term.echo(`=> ${result}`);
 } catch(e) {
-logToIdeConsole(`Error: ${e.message}`, 'error');
+term.error(e.message);
 }
 }
 async function runPython(code) {
+setActivePanel('terminal');
 if (!runtimes.python.loaded) {
 term.error("Python runtime not installed. Please install it from the Runtimes panel.");
 return;
 }
 logToIdeConsole('Executing Python code with Pyodide...');
+term.echo("Running Python...");
 try {
 const pyodide = runtimes.python.instance;
 await pyodide.loadPackagesFromImports(code);
@@ -388,15 +411,21 @@ term.error(e.message);
 }
 }
 async function runPhp(code) {
+setActivePanel('terminal');
 if (!runtimes.php.loaded) {
 term.error("PHP runtime not installed. Please install it from the Runtimes panel.");
 return;
 }
-logToIdeConsole('Executing PHP code with php-wasm...');
+logToIdeConsole('Executing PHP code with Playground...');
+term.echo("Running PHP...");
 try {
 const php = runtimes.php.instance;
-const output = await php.run(code);
+const output = await php.run({code: code});
+if(output.errors) {
+term.error(output.errors);
+} else {
 term.echo(output.text);
+}
 } catch(e) {
 term.error(e.message);
 }
