@@ -24,16 +24,19 @@
 <aside id="side-bar">
 <div class="sidebar-header">
 <span id="sidebar-title">EXPLORER</span>
-<div id="sidebar-actions" class="sidebar-actions">
-<div class="sidebar-action-group" data-view="explorer">
-<i class="fa-solid fa-file-circle-plus" title="New File"></i>
-<i class="fa-solid fa-folder-plus" title="New Folder"></i>
-</div>
+<div class="sidebar-actions">
 <i class="fa-solid fa-xmark" title="Close Sidebar" data-action="close-sidebar"></i>
 </div>
 </div>
 <div id="sidebar-content">
 <div id="explorer-view" class="sidebar-view active">
+<div class="explorer-actions">
+<span>Project Files</span>
+<div>
+<i class="fa-solid fa-file-circle-plus" title="New File"></i>
+<i class="fa-solid fa-folder-plus" title="New Folder"></i>
+</div>
+</div>
 <div id="file-tree" class="file-tree"></div>
 </div>
 <div id="search-view" class="sidebar-view">
@@ -45,7 +48,7 @@
 <i class="fa-brands fa-python"></i>
 <div>
 <h4>Python</h4>
-<p>Run .py files using Pyodide (CPython in WASM)</p>
+<p>Run .py files using Pyodide</p>
 </div>
 </div>
 <button class="btn-install-runtime" data-runtime="python">Install</button>
@@ -55,7 +58,7 @@
 <i class="fa-brands fa-node-js"></i>
 <div>
 <h4>TypeScript</h4>
-<p>Transpile & run .ts files using esbuild-wasm</p>
+<p>Transpile & run .ts files</p>
 </div>
 </div>
 <button class="btn-install-runtime" data-runtime="typescript">Install</button>
