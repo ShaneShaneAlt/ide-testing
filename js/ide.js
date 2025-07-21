@@ -1,7 +1,9 @@
 import { getProject, saveProject } from './db.js';
 let editor;
 let currentProject;
+let openFileTabs=[];
 const ideContainer=document.getElementById('ide-container');
+const editorTabsContainer=document.getElementById('editor-tabs');
 window.addEventListener('DOMContentLoaded', async ()=>{
 const urlParams=new URLSearchParams(window.location.search);
 const projectId=parseInt(urlParams.get('project'), 10);
@@ -36,8 +38,8 @@ importScripts('https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/base/wor
 };
 require(["vs/editor/editor.main"], function (){
 editor=monaco.editor.create(document.getElementById('editor-container'), {
-value:`// Welcome to RyxIDE\n// Select a file from the explorer to begin.`,
-language:'javascript',
+value:`// Select a file to begin coding`,
+language:'plaintext',
 theme:'vs-dark',
 automaticLayout:true,
 roundedSelection:true
@@ -75,6 +77,16 @@ document.getElementById('panel-tabs').addEventListener('click', (event)=>{
 const tab=event.target.closest('.tab');
 if(tab){
 setActivePanel(tab.dataset.panel);
+}
+});
+editorTabsContainer.addEventListener('click', (event) => {
+const tab=event.target.closest('.tab');
+const closeBtn=event.target.closest('.tab-close');
+if(closeBtn){
+event.stopPropagation();
+closeFileTab(closeBtn.parentElement.dataset.fileId);
+} else if(tab){
+openFileInEditor(tab.dataset.fileId);
 }
 });
 }
@@ -119,6 +131,10 @@ default:return 'fa-solid fa-file';
 }
 }
 function openFileInEditor(fileId){
+if(!openFileTabs.includes(fileId)){
+openFileTabs.push(fileId);
+}
+renderFileTabs();
 document.querySelectorAll('#file-tree .file-item').forEach(el=>{
 el.classList.toggle('active', el.dataset.fileId===fileId);
 });
@@ -137,6 +153,41 @@ case 'ts':language='typescript';break;
 }
 monaco.editor.setModelLanguage(editor.getModel(), language);
 document.getElementById('language-status').textContent=language.toUpperCase();
+}
+}
+function renderFileTabs(){
+editorTabsContainer.innerHTML='';
+openFileTabs.forEach(fileId => {
+const file=currentProject.files.find(f => f.id === fileId);
+if(file){
+const tabEl=document.createElement('div');
+tabEl.className='tab';
+tabEl.dataset.fileId=file.id;
+const currentFileId=editor.getModel().uri.toString();
+if(file.id===currentFileId || openFileTabs.indexOf(fileId) === openFileTabs.length - 1){
+tabEl.classList.add('active');
+}
+tabEl.innerHTML=`
+<i class="${getFileIcon(file.name)}"></i>
+<span>${file.name}</span>
+<i class="fa-solid fa-xmark tab-close"></i>
+`;
+editorTabsContainer.appendChild(tabEl);
+}
+});
+}
+function closeFileTab(fileId){
+const index=openFileTabs.indexOf(fileId);
+if(index > -1){
+openFileTabs.splice(index, 1);
+}
+renderFileTabs();
+if(openFileTabs.length > 0){
+const lastFile=openFileTabs[openFileTabs.length - 1];
+openFileInEditor(lastFile);
+} else {
+editor.setValue('// All files closed.');
+monaco.editor.setModelLanguage(editor.getModel(), 'plaintext');
 }
 }
 function runCode(){
