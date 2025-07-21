@@ -1,90 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IDE - RyxIDE</title>
-
-    <!-- Font Awesome (for icons) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Our Shared Stylesheet -->
-    <link rel="stylesheet" href="css/style.css">
-
-    <!-- Monaco Editor Loader -->
-    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDE - RyxIDE</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
 </head>
 <body>
-
-    <div id="ide-container" class="ide-container">
-        <!-- Activity Bar (Far Left) -->
-        <nav id="activity-bar">
-            <div class="action-items-top">
-                <i class="fa-solid fa-files active" title="Explorer" data-action="toggle-sidebar"></i>
-                <i class="fa-solid fa-magnifying-glass" title="Search" data-action="toggle-sidebar"></i>
-            </div>
-            <div class="action-items-bottom">
-                <a href="index.html"><i class="fa-solid fa-table-cells-large" title="Projects"></i></a>
-                <i class="fa-solid fa-gear" title="Settings" data-action="toggle-settings-modal"></i>
-            </div>
-        </nav>
-
-        <!-- Side Bar (Left) -->
-        <aside id="side-bar">
-            <div class="sidebar-header">
-                <span id="sidebar-title">EXPLORER</span>
-                <div class="sidebar-actions">
-                    <i class="fa-solid fa-file-circle-plus" title="New File"></i>
-                    <i class="fa-solid fa-folder-plus" title="New Folder"></i>
-                    <i class="fa-solid fa-xmark" title="Close Sidebar" data-action="close-sidebar"></i>
-                </div>
-            </div>
-            <div id="file-tree" class="file-tree">
-                <!-- File tree will be dynamically generated here -->
-            </div>
-        </aside>
-
-        <!-- Editor Group (Center) -->
-        <main id="editor-group">
-            <div id="editor-tabs" class="editor-tabs"></div>
-            <div id="editor-container"></div>
-        </main>
-
-        <!-- Panel (Bottom) -->
-        <section id="panel">
-            <div class="panel-tabs">
-                <div class="tab active" data-panel="terminal">TERMINAL</div>
-                <div class="tab" data-panel="preview">PREVIEW</div>
-                <div class="tab" data-panel="problems">PROBLEMS</div>
-            </div>
-            <div class="panel-content">
-                <div id="terminal-container" class="panel-view active"></div>
-                <div id="preview-container" class="panel-view">
-                    <iframe id="preview-iframe" sandbox="allow-scripts allow-same-origin"></iframe>
-                </div>
-                <div id="problems-container" class="panel-view">
-                    <p>No problems have been detected.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Status Bar (Bottom-most) -->
-        <footer id="status-bar">
-            <div class="status-left">
-                <button id="run-btn" class="run-btn"><i class="fa-solid fa-play"></i> Run</button>
-                <span id="language-status"></span>
-            </div>
-            <div class="status-right">
-                <span id="cursor-status">Ln 1, Col 1</span>
-                <i class="fa-solid fa-window-maximize" id="panel-toggle-btn" title="Toggle Panel" data-action="toggle-panel"></i>
-            </div>
-        </footer>
-
-        <!-- Mobile Overlay for closing sidebars/panels -->
-        <div id="mobile-overlay" class="mobile-overlay"></div>
-    </div>
-
-    <script type="module" src="js/ide.js"></script>
-    
+<div id="ide-container" class="ide-container">
+<nav id="activity-bar">
+<div class="action-items-top">
+<i class="fa-solid fa-files active" title="Explorer" data-action="toggle-sidebar"></i>
+<i class="fa-solid fa-magnifying-glass" title="Search" data-action="toggle-sidebar"></i>
+</div>
+<div class="action-items-bottom">
+<a href="index.html"><i class="fa-solid fa-table-cells-large" title="Projects"></i></a>
+<i class="fa-solid fa-gear" title="Settings" data-action="toggle-settings-modal"></i>
+</div>
+</nav>
+<aside id="side-bar">
+<div class="sidebar-header">
+<span id="sidebar-title">EXPLORER</span>
+<div class="sidebar-actions">
+<i class="fa-solid fa-file-circle-plus" title="New File"></i>
+<i class="fa-solid fa-folder-plus" title="New Folder"></i>
+<i class="fa-solid fa-xmark" title="Close Sidebar" data-action="close-sidebar"></i>
+</div>
+</div>
+<div id="file-tree" class="file-tree">
+</div>
+</aside>
+<main id="editor-group">
+<div id="editor-tabs" class="editor-tabs"></div>
+<div id="editor-container"></div>
+</main>
+<section id="panel">
+<div class="panel-tabs">
+<div class="tab active" data-panel="terminal">TERMINAL</div>
+<div class="tab" data-panel="preview">PREVIEW</div>
+<div class="tab" data-panel="problems">PROBLEMS</div>
+</div>
+<div class="panel-content">
+<div id="terminal-container" class="panel-view active"></div>
+<div id="preview-container" class="panel-view">
+<iframe id="preview-iframe" sandbox="allow-scripts allow-same-origin"></iframe>
+</div>
+<div id="problems-container" class="panel-view">
+<p>No problems have been detected.</p>
+</div>
+</div>
+</section>
+<footer id="status-bar">
+<div class="status-left">
+<button id="run-btn" class="run-btn"><i class="fa-solid fa-play"></i> Run</button>
+<span id="language-status"></span>
+</div>
+<div class="status-right">
+<span id="cursor-status">Ln 1, Col 1</span>
+<i class="fa-solid fa-window-maximize" id="panel-toggle-btn" title="Toggle Panel" data-action="toggle-panel"></i>
+</div>
+</footer>
+<div id="mobile-overlay" class="mobile-overlay"></div>
+</div>
+<script type="module" src="js/ide.js"></script>
 </body>
 </html>
