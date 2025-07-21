@@ -175,9 +175,8 @@ runtimes.python.instance = await loadPyodide();
 runtimes.python.loaded = true;
 } else if (runtimeName === 'php') {
 const { PhpWeb } = window.PlaygroundClient;
-runtimes.php.instance = await PhpWeb.load('8.2', {
-loadPHP: ['php-sqlite3']
-});
+if (!PhpWeb) throw new Error('PlaygroundClient library not found.');
+runtimes.php.instance = await PhpWeb.load('8.2');
 runtimes.php.loaded = true;
 }
 logToIdeConsole(`${runtimeName} runtime installed successfully.`);
