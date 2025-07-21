@@ -1,7 +1,12 @@
-// js/db.js
+// js/db.js (Corrected)
 
-// We will import the 'idb' library via a CDN in our HTML files.
-// This file assumes 'idb' is available in the global scope.
+// We now explicitly pull openDB from the global window.idb object.
+const { openDB } = window.idb;
+
+if (!openDB) {
+    console.error("IndexedDB library (idb) is not loaded!");
+    // You could show an error to the user here
+}
 
 const DB_NAME = 'RyxIDE-DB';
 const DB_VERSION = 1;
@@ -12,11 +17,14 @@ let db;
 async function initDB() {
     if (db) return db;
 
-    db = await idb.openDB(DB_NAME, DB_VERSION, {
+    // Make sure openDB is available before trying to use it
+    if (!openDB) {
+        throw new Error("Database library not found.");
+    }
+
+    db = await openDB(DB_NAME, DB_VERSION, {
         upgrade(db) {
-            // Create the 'projects' object store if it doesn't exist
             if (!db.objectStoreNames.contains(STORE_PROJECTS)) {
-                // The 'id' will be our key, and we'll auto-increment it
                 db.createObjectStore(STORE_PROJECTS, { keyPath: 'id', autoIncrement: true });
             }
         },
@@ -25,7 +33,7 @@ async function initDB() {
     return db;
 }
 
-// --- Project Management Functions ---
+// --- Project Management Functions (No changes needed below this line) ---
 
 export async function getAllProjects() {
     const db = await initDB();
@@ -47,13 +55,16 @@ export async function deleteProject(id) {
     return await db.delete(STORE_PROJECTS, id);
 }
 
-// Example of creating a new project
 export async function createNewProject(name, template = 'html') {
     const db = await initDB();
+    // For now, new projects are simple. We'll add template files later.
     const newProject = {
         name: name,
         template: template,
-        files: [ /* Pre-fill with template files later */ ],
+        files: [
+            { id: 'index.html', name: 'index.html', content: '<h1>Hello World</h1>' },
+            { id: 'style.css', name: 'style.css', content: 'body { color: blue; }' },
+        ],
         created: new Date(),
         lastModified: new Date()
     };
