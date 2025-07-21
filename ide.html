@@ -63,20 +63,6 @@
 </div>
 <button class="btn-install-runtime" data-runtime="php">Install</button>
 </div>
-<div class="runtime-item">
-<div class="runtime-info">
-<i class="fa-solid fa-gem"></i>
-<div><h4>Ruby</h4><p>via ruby-wasm (~6 MB)</p></div>
-</div>
-<button class="btn-install-runtime" data-runtime="ruby">Install</button>
-</div>
-<div class="runtime-item">
-<div class="runtime-info">
-<i class="fa-solid fa-hashtag"></i>
-<div><h4>C#</h4><p>via DotNet-WASM (TBD)</p></div>
-</div>
-<button class="btn-install-runtime" data-runtime="csharp" disabled>Soon</button>
-</div>
 </div>
 </div>
 </aside>
@@ -89,15 +75,15 @@
 <div class="tab active" data-panel="terminal">TERMINAL</div>
 <div class="tab" data-panel="preview">PREVIEW</div>
 <div class="tab" data-panel="problems">PROBLEMS</div>
+<div class="tab" data-panel="console">CONSOLE</div>
 </div>
 <div class="panel-content">
-<div id="terminal-container" class="panel-view active"></div>
+<div id="terminal-container" class="panel-view active"><div></div></div>
 <div id="preview-container" class="panel-view">
 <iframe id="preview-iframe" sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock allow-popups allow-presentation allow-same-origin"></iframe>
 </div>
-<div id="problems-container" class="panel-view">
-<p class="p-2">No problems have been detected.</p>
-</div>
+<div id="problems-container" class="panel-view"></div>
+<div id="console-container" class="panel-view"></div>
 </div>
 </section>
 <footer id="status-bar">
