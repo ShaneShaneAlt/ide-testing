@@ -12,8 +12,9 @@
 <div id="ide-container" class="ide-container">
 <nav id="activity-bar">
 <div class="action-items-top">
-<i class="fa-solid fa-files active" title="Explorer" data-action="toggle-sidebar"></i>
-<i class="fa-solid fa-magnifying-glass" title="Search" data-action="toggle-sidebar"></i>
+<i class="fa-solid fa-files active" title="Explorer" data-action="toggle-sidebar" data-view="explorer"></i>
+<i class="fa-solid fa-magnifying-glass" title="Search" data-action="toggle-sidebar" data-view="search"></i>
+<i class="fa-solid fa-puzzle-piece" title="Runtimes" data-action="toggle-sidebar" data-view="runtimes"></i>
 </div>
 <div class="action-items-bottom">
 <a href="index.html"><i class="fa-solid fa-table-cells-large" title="Projects"></i></a>
@@ -29,7 +30,35 @@
 <i class="fa-solid fa-xmark" title="Close Sidebar" data-action="close-sidebar"></i>
 </div>
 </div>
-<div id="file-tree" class="file-tree">
+<div id="sidebar-content">
+<div id="explorer-view" class="sidebar-view active">
+<div id="file-tree" class="file-tree"></div>
+</div>
+<div id="search-view" class="sidebar-view">
+<p class="p-2">Search functionality coming soon.</p>
+</div>
+<div id="runtimes-view" class="sidebar-view">
+<div class="runtime-item">
+<div class="runtime-info">
+<i class="fa-brands fa-python"></i>
+<div>
+<h4>Python</h4>
+<p>Run .py files using Pyodide (CPython in WASM)</p>
+</div>
+</div>
+<button class="btn-install-runtime" data-runtime="python">Install</button>
+</div>
+<div class="runtime-item">
+<div class="runtime-info">
+<i class="fa-brands fa-node-js"></i>
+<div>
+<h4>TypeScript</h4>
+<p>Transpile & run .ts files using esbuild-wasm</p>
+</div>
+</div>
+<button class="btn-install-runtime" data-runtime="typescript">Install</button>
+</div>
+</div>
 </div>
 </aside>
 <main id="editor-group">
@@ -37,7 +66,7 @@
 <div id="editor-container"></div>
 </main>
 <section id="panel">
-<div class="panel-tabs">
+<div id="panel-tabs" class="panel-tabs">
 <div class="tab active" data-panel="terminal">TERMINAL</div>
 <div class="tab" data-panel="preview">PREVIEW</div>
 <div class="tab" data-panel="problems">PROBLEMS</div>
@@ -48,7 +77,7 @@
 <iframe id="preview-iframe" sandbox="allow-scripts allow-same-origin"></iframe>
 </div>
 <div id="problems-container" class="panel-view">
-<p>No problems have been detected.</p>
+<p class="p-2">No problems have been detected.</p>
 </div>
 </div>
 </section>
