@@ -1,4 +1,5 @@
 import { getProject, saveProject } from './db.js';
+console.log('[RDE] ide.js module loaded');
 let editor;
 let currentProject;
 let openFileTabs=[];
@@ -8,49 +9,78 @@ const ideContainer=document.getElementById('ide-container');
 const editorTabsContainer=document.getElementById('editor-tabs');
 const searchInput=document.getElementById('search-input');
 const searchResultsContainer=document.getElementById('search-results');
-function loadScript(src) {
+function loadScript(src, globalVarName) {
+console.log(`[RDE] Request to load script: ${src}`);
 return new Promise((resolve, reject) => {
-const existingScript=document.querySelector(`script[src="${src}"]`);
-if (existingScript) {
+if (window[globalVarName]) {
+console.log(`[RDE] Script ${src} already loaded (global '${globalVarName}' exists).`);
 resolve();
 return;
 }
 const script=document.createElement('script');
 script.src=src;
-script.onload=resolve;
-script.onerror=reject;
+script.onload = () => {
+console.log(`[RDE] Script ${src} finished loading.`);
+if (window[globalVarName]) {
+console.log(`[RDE] Global '${globalVarName}' is now available.`);
+resolve();
+} else {
+console.error(`[RDE] Script ${src} loaded but global '${globalVarName}' is not defined.`);
+reject(new Error(`Failed to define ${globalVarName}`));
+}
+};
+script.onerror = () => {
+console.error(`[RDE] Failed to load script: ${src}`);
+reject(new Error(`Failed to load script: ${src}`));
+};
 document.head.appendChild(script);
 });
 }
 window.addEventListener('DOMContentLoaded', async ()=>{
+console.log('[RDE] DOMContentLoaded event fired.');
 const urlParams=new URLSearchParams(window.location.search);
 const projectId=parseInt(urlParams.get('project'), 10);
 if(!projectId){
+console.error('[RDE] No project ID found in URL.');
 alert("No project ID specified!");
 window.location.href='index.html';
 return;
 }
+console.log(`[RDE] Project ID found: ${projectId}`);
 currentProject=await getProject(projectId);
 if(currentProject){
+console.log('[RDE] Project data loaded successfully:', currentProject);
 document.title=`${currentProject.name} - RyxIDE`;
+console.log('[RDE] Initializing editor...');
 await initializeEditor();
+console.log('[RDE] Editor initialized.');
+console.log('[RDE] Initializing terminal...');
 await initializeTerminal();
+console.log('[RDE] Terminal initialized.');
+console.log('[RDE] Rendering file tree...');
 renderFileTree();
 if(currentProject.files.length>0){
+console.log('[RDE] Opening first file in project.');
 openFileInEditor(currentProject.files[0].id);
 }
 }else{
+console.error(`[RDE] Project with ID ${projectId} not found in database.`);
 alert("Project not found!");
 window.location.href='index.html';
 }
+console.log('[RDE] Setting up UI event listeners...');
 setupUIEventListeners();
+console.log('[RDE] UI setup complete.');
 });
 async function initializeEditor(){
+console.log('[RDE:Editor] Starting initialization.');
 return new Promise((resolve) => {
 if(typeof monaco !== 'undefined' && editor){
+console.log('[RDE:Editor] Monaco already defined, skipping load.');
 resolve();
 return;
 }
+console.log('[RDE:Editor] Loading monaco via require.js');
 require.config({ paths:{ 'vs':'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
 window.MonacoEnvironment={
 getWorkerUrl:function (workerId, label){
@@ -61,6 +91,7 @@ importScripts('https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/base/wor
 }
 };
 require(["vs/editor/editor.main"], function (){
+console.log('[RDE:Editor] Monaco module loaded, creating editor instance.');
 editor=monaco.editor.create(document.getElementById('editor-container'), {
 value:`// Select a file to begin coding`,
 language:'plaintext',
@@ -77,14 +108,16 @@ model.onDidChangeContent(() => {
 updateProblemsPanel();
 });
 });
+console.log('[RDE:Editor] Editor instance created.');
 resolve();
 });
 });
 }
 async function initializeTerminal(){
-if (typeof Terminal === 'undefined') {
-await loadScript('https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js');
-}
+console.log('[RDE:Terminal] Starting initialization.');
+try {
+await loadScript('https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js', 'Terminal');
+console.log('[RDE:Terminal] Xterm.js script loaded, creating terminal instance.');
 term = new Terminal({
 cursorBlink: true,
 theme: {
@@ -95,6 +128,12 @@ fontFamily: 'var(--font-mono)'
 });
 term.open(document.getElementById('terminal-container'));
 term.write('RyxIDE Terminal (Bash loaded)\r\n$ ');
+console.log('[RDE:Terminal] Terminal instance created and opened.');
+} catch (error) {
+console.error('[RDE:Terminal] CRITICAL: Failed to initialize terminal.', error);
+const termContainer = document.getElementById('terminal-container');
+termContainer.textContent = 'Error: Could not load terminal component.';
+}
 }
 function setupUIEventListeners(){
 document.getElementById('run-btn').addEventListener('click', runCode);
@@ -155,6 +194,7 @@ searchResultsContainer.appendChild(resultEl);
 });
 }
 function setActiveSidebarView(viewName){
+console.log(`[RDE:UI] Setting active sidebar view to: ${viewName}`);
 const sidebarTitle=document.getElementById('sidebar-title');
 const activityBarIcons=document.querySelectorAll('#activity-bar i[data-view]');
 const sidebarViews=document.querySelectorAll('#sidebar-content .sidebar-view');
@@ -163,6 +203,7 @@ activityBarIcons.forEach(icon=>icon.classList.toggle('active', icon.dataset.view
 sidebarViews.forEach(view=>view.classList.toggle('active', view.id===`${viewName}-view`));
 }
 function setActivePanel(panelName){
+console.log(`[RDE:UI] Setting active panel to: ${panelName}`);
 document.querySelectorAll('#panel-tabs .tab').forEach(tab=>{
 tab.classList.toggle('active', tab.dataset.panel===panelName);
 });
@@ -202,6 +243,7 @@ default:return 'fa-solid fa-file';
 }
 }
 function openFileInEditor(fileId){
+console.log(`[RDE:Editor] Opening file with ID: ${fileId}`);
 activeFileId = fileId;
 if(!openFileTabs.includes(fileId)){
 openFileTabs.push(fileId);
@@ -214,6 +256,7 @@ const file=currentProject.files.find(f=>f.id===fileId);
 if(file&&editor){
 let model = monaco.editor.getModels().find(m => m.uri.toString() === file.id);
 if (!model) {
+console.log(`[RDE:Editor] Creating new model for ${file.name}`);
 model = monaco.editor.createModel(file.content, getLanguageForFile(file.name), monaco.Uri.parse(file.id));
 }
 editor.setModel(model);
@@ -279,6 +322,7 @@ editorTabsContainer.appendChild(tabEl);
 });
 }
 function closeFileTab(fileId){
+console.log(`[RDE:UI] Closing tab for file ID: ${fileId}`);
 const index=openFileTabs.indexOf(fileId);
 if(index > -1){
 openFileTabs.splice(index, 1);
@@ -304,7 +348,7 @@ return;
 const code=editor.getValue();
 const language=model.getLanguageId();
 const previewFrame=document.getElementById('preview-iframe');
-console.log(`Running code in language: ${language}`);
+console.log(`[RDE:Runtime] Running code in language: ${language}`);
 ideContainer.classList.add('panel-visible');
 setActivePanel('preview');
 if(language==='html'){
