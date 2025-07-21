@@ -7,29 +7,30 @@ document.body.addEventListener('click', handleBodyClick);
 });
 async function handleBodyClick(event){
 const target=event.target;
+const menuBtn=target.closest('.project-menu-btn');
+const menuItem=target.closest('.project-menu a');
+const projectCard=target.closest('.project-card');
 if(target.closest('#create-project-btn')){
 await handleCreateProject();
 return;
 }
-if(target.closest('.project-menu-btn')){
+if(menuBtn){
 event.stopPropagation();
-toggleProjectMenu(target.closest('.project-menu-btn'));
+toggleProjectMenu(menuBtn);
 return;
 }
-const menuItem=target.closest('.project-menu a');
 if(menuItem){
 event.preventDefault();
 event.stopPropagation();
 const card=menuItem.closest('.project-card');
 const projectId=parseInt(card.dataset.projectId, 10);
-if(menuItem.classList.contains('rename-btn'))await handleRenameProject(projectId);
-if(menuItem.classList.contains('duplicate-btn'))await handleDuplicateProject(projectId);
-if(menuItem.classList.contains('export-btn'))await handleExportProject(projectId);
-if(menuItem.classList.contains('delete-btn'))await handleDeleteProject(projectId);
+if(menuItem.classList.contains('rename-btn')) await handleRenameProject(projectId);
+if(menuItem.classList.contains('duplicate-btn')) await handleDuplicateProject(projectId);
+if(menuItem.classList.contains('export-btn')) await handleExportProject(projectId);
+if(menuItem.classList.contains('delete-btn')) await handleDeleteProject(projectId);
 document.querySelectorAll('.project-menu.active').forEach(m=>m.classList.remove('active'));
 return;
 }
-const projectCard=target.closest('.project-card');
 if(projectCard){
 window.location.href=`ide.html?project=${projectCard.dataset.projectId}`;
 return;
@@ -111,7 +112,7 @@ const card=document.createElement('div');
 card.className='project-card';
 card.dataset.projectId=project.id;
 card.innerHTML=`
-<div class="card-icon"><i class="fa-solid fa-code"></i></div>
+<div class="card-icon"><i class="fa-solid fa-code-branch"></i></div>
 <div class="card-content">
 <h3>${project.name}</h3>
 <p>Last modified: ${new Date(project.lastModified).toLocaleDateString()}</p>
