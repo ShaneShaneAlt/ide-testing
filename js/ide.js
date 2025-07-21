@@ -1,5 +1,4 @@
 import { getProject, saveProject } from './db.js';
-import { Terminal } from 'https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js';
 console.log('[RDE] ide.js module loaded');
 let editor;
 let currentProject;
@@ -90,7 +89,7 @@ resolve();
 function initializeTerminal(){
 console.log('[RDE:Terminal] Starting initialization.');
 try {
-console.log('[RDE:Terminal] Terminal object imported, creating instance.');
+console.log('[RDE:Terminal] Attempting to create new Terminal instance.');
 term = new Terminal({
 cursorBlink: true,
 theme: {
@@ -105,7 +104,7 @@ console.log('[RDE:Terminal] Terminal instance created and opened.');
 } catch (error) {
 console.error('[RDE:Terminal] CRITICAL: Failed to initialize terminal.', error);
 const termContainer = document.getElementById('terminal-container');
-termContainer.textContent = 'Error: Could not load terminal component.';
+if(termContainer) termContainer.textContent = 'Error: Could not load terminal component. Is the xterm.js script loaded?';
 }
 }
 function setupUIEventListeners(){
