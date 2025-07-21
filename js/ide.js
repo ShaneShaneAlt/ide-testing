@@ -89,28 +89,33 @@ resolve();
 function initializeTerminal(){
 console.log('[RDE:Terminal] Starting initialization.');
 try {
-if (typeof window.Terminal === 'undefined') {
-console.error('[RDE:Terminal] CRITICAL: window.Terminal is not defined. Check if xterm.js is loaded correctly in ide.html.');
+if (typeof jQuery === 'undefined' || typeof jQuery.fn.terminal === 'undefined') {
+console.error('[RDE:Terminal] CRITICAL: jQuery or jQuery.terminal is not defined.');
 const termContainer = document.getElementById('terminal-container');
 if(termContainer) termContainer.textContent = 'Error: Terminal library failed to load.';
 return;
 }
-console.log('[RDE:Terminal] window.Terminal is defined. Creating instance.');
-term = new window.Terminal({
-cursorBlink: true,
-theme: {
-background: '#2a2a2a',
-foreground: '#e8e8e8',
-},
-fontFamily: 'var(--font-mono)'
+console.log('[RDE:Terminal] jQuery.terminal is defined. Creating instance.');
+term = $('#terminal-container').terminal(function(command, term) {
+if (command !== '') {
+try {
+const result = window.eval(command);
+if (result !== undefined) {
+term.echo(String(result));
+}
+} catch(e) {
+term.error(new String(e));
+}
+} else {
+term.echo('');
+}
+}, {
+greetings: 'RyxIDE Terminal',
+prompt: '$ '
 });
-term.open(document.getElementById('terminal-container'));
-term.write('RyxIDE Terminal (Bash loaded)\r\n$ ');
 console.log('[RDE:Terminal] Terminal instance created and opened successfully.');
 } catch (error) {
 console.error('[RDE:Terminal] CRITICAL: An error occurred during terminal initialization.', error);
-const termContainer = document.getElementById('terminal-container');
-if(termContainer) termContainer.textContent = 'Error: Could not initialize terminal component.';
 }
 }
 function setupUIEventListeners(){
@@ -349,9 +354,9 @@ setActivePanel('terminal');
 term.clear();
 try {
 const result = eval(code);
-term.write(`> ${result}\r\n$ `);
+term.echo(`> ${result}`);
 } catch(e) {
-term.write(`Error: ${e.message}\r\n$ `);
+term.error(e.message);
 }
 }
 else{
