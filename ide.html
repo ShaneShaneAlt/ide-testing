@@ -16,26 +16,27 @@
 </head>
 <body>
 
-    <div class="ide-container">
+    <div id="ide-container" class="ide-container">
         <!-- Activity Bar (Far Left) -->
         <nav id="activity-bar">
             <div class="action-items-top">
-                <i class="fa-solid fa-files active" title="Explorer"></i>
-                <i class="fa-solid fa-magnifying-glass" title="Search"></i>
+                <i class="fa-solid fa-files active" title="Explorer" data-action="toggle-sidebar"></i>
+                <i class="fa-solid fa-magnifying-glass" title="Search" data-action="toggle-sidebar"></i>
             </div>
             <div class="action-items-bottom">
                 <a href="index.html"><i class="fa-solid fa-table-cells-large" title="Projects"></i></a>
-                <i class="fa-solid fa-gear" title="Settings"></i>
+                <i class="fa-solid fa-gear" title="Settings" data-action="toggle-settings-modal"></i>
             </div>
         </nav>
 
         <!-- Side Bar (Left) -->
         <aside id="side-bar">
             <div class="sidebar-header">
-                <span>EXPLORER</span>
+                <span id="sidebar-title">EXPLORER</span>
                 <div class="sidebar-actions">
                     <i class="fa-solid fa-file-circle-plus" title="New File"></i>
                     <i class="fa-solid fa-folder-plus" title="New Folder"></i>
+                    <i class="fa-solid fa-xmark" title="Close Sidebar" data-action="close-sidebar"></i>
                 </div>
             </div>
             <div id="file-tree" class="file-tree">
@@ -45,12 +46,8 @@
 
         <!-- Editor Group (Center) -->
         <main id="editor-group">
-            <div id="editor-tabs" class="editor-tabs">
-                <!-- Editor tabs will be dynamically generated here -->
-            </div>
-            <div id="editor-container">
-                <!-- Monaco Editor will be mounted here -->
-            </div>
+            <div id="editor-tabs" class="editor-tabs"></div>
+            <div id="editor-container"></div>
         </main>
 
         <!-- Panel (Bottom) -->
@@ -79,11 +76,14 @@
             </div>
             <div class="status-right">
                 <span id="cursor-status">Ln 1, Col 1</span>
+                <i class="fa-solid fa-window-maximize" id="panel-toggle-btn" title="Toggle Panel" data-action="toggle-panel"></i>
             </div>
         </footer>
+
+        <!-- Mobile Overlay for closing sidebars/panels -->
+        <div id="mobile-overlay" class="mobile-overlay"></div>
     </div>
 
-    <!-- Our Custom JavaScript for this page -->
     <script type="module" src="js/ide.js"></script>
     
 </body>
