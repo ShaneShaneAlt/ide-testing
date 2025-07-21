@@ -89,8 +89,14 @@ resolve();
 function initializeTerminal(){
 console.log('[RDE:Terminal] Starting initialization.');
 try {
-console.log('[RDE:Terminal] Attempting to create new Terminal instance.');
-term = new Terminal({
+if (typeof window.Terminal === 'undefined') {
+console.error('[RDE:Terminal] CRITICAL: window.Terminal is not defined. Check if xterm.js is loaded correctly in ide.html.');
+const termContainer = document.getElementById('terminal-container');
+if(termContainer) termContainer.textContent = 'Error: Terminal library failed to load.';
+return;
+}
+console.log('[RDE:Terminal] window.Terminal is defined. Creating instance.');
+term = new window.Terminal({
 cursorBlink: true,
 theme: {
 background: '#2a2a2a',
@@ -100,11 +106,11 @@ fontFamily: 'var(--font-mono)'
 });
 term.open(document.getElementById('terminal-container'));
 term.write('RyxIDE Terminal (Bash loaded)\r\n$ ');
-console.log('[RDE:Terminal] Terminal instance created and opened.');
+console.log('[RDE:Terminal] Terminal instance created and opened successfully.');
 } catch (error) {
-console.error('[RDE:Terminal] CRITICAL: Failed to initialize terminal.', error);
+console.error('[RDE:Terminal] CRITICAL: An error occurred during terminal initialization.', error);
 const termContainer = document.getElementById('terminal-container');
-if(termContainer) termContainer.textContent = 'Error: Could not load terminal component. Is the xterm.js script loaded?';
+if(termContainer) termContainer.textContent = 'Error: Could not initialize terminal component.';
 }
 }
 function setupUIEventListeners(){
