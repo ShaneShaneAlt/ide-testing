@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Projects - RyxIDE</title>
+
+    <!-- Font Awesome (for icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Our Shared Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- IndexedDB Library (idb) -->
+    <script src="https://cdn.jsdelivr.net/npm/idb@7/build/iife/index-min.js"></script>
+</head>
+<body>
+
+    <!-- Onboarding Modal (Hidden by default) -->
+    <div id="onboarding-overlay" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Welcome to RyxIDE!</h2>
+            </div>
+            <div class="modal-body">
+                <p>An in-browser IDE for modern development. Your projects are saved directly and securely in your browser.</p>
+                <p>Let's get you started.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="start-onboarding-btn">Let's Go!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Page Wrapper -->
+    <div id="dashboard-wrapper">
+        <header id="dashboard-header">
+            <div class="logo">
+                <i class="fa-brands fa-react"></i> <!-- Placeholder Logo -->
+                <h1>RyxIDE</h1>
+            </div>
+            <nav class="main-nav">
+                <a href="index.html" class="active">Projects</a>
+                <a href="settings.html">Settings</a>
+            </nav>
+        </header>
+
+        <main id="projects-grid-container">
+            <div class="projects-header">
+                <h2>My Projects</h2>
+                <button id="create-project-btn"><i class="fa-solid fa-plus"></i> Create Project</button>
+            </div>
+            <div id="projects-grid" class="grid">
+                <!-- Project cards will be injected here by JavaScript -->
+                <div id="empty-state" class="hidden">
+                    <p>You don't have any projects yet. Click "Create Project" to start!</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Our Custom JavaScript for this page -->
+    <script type="module" src="js/main.js"></script>
+
+</body>
+</html>
