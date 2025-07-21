@@ -371,6 +371,7 @@ border-right:1px solid var(--border-primary);
 display:flex;
 flex-direction:column;
 overflow:hidden;
+z-index:50;
 }
 .sidebar-header{
 padding:0.75rem 1rem;
@@ -383,18 +384,7 @@ justify-content:space-between;
 align-items:center;
 flex-shrink:0;
 text-transform:uppercase;
-}
-.sidebar-actions{
-display:flex;
-gap:0.5rem;
-}
-.sidebar-actions i{
-cursor:pointer;
-padding:0.25rem;
-transition:color var(--transition-speed);
-}
-.sidebar-actions i:hover{
-color:var(--text-primary);
+border-bottom:1px solid var(--border-primary);
 }
 .sidebar-actions .fa-xmark{
 display:none;
@@ -408,6 +398,18 @@ display:none;
 }
 .sidebar-view.active{
 display:block;
+}
+.explorer-actions{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:0.5rem;
+font-size:0.8rem;
+color:var(--text-secondary);
+}
+.explorer-actions div i{
+margin-left:0.5rem;
+cursor:pointer;
 }
 #file-tree{
 padding:0 0.5rem;
@@ -460,8 +462,14 @@ white-space:nowrap;
 .editor-tabs .tab.active{
 background-color:var(--bg-secondary);
 color:var(--text-primary);
-border-top:2px solid var(--accent-primary);
-padding-top:calc(0.6rem - 2px);
+}
+.editor-tabs .tab .tab-close{
+margin-left:0.5rem;
+padding:0.25rem;
+border-radius:50%;
+}
+.editor-tabs .tab .tab-close:hover{
+background-color:rgba(255,255,255,0.2);
 }
 #editor-container{
 flex-grow:1;
@@ -609,7 +617,7 @@ grid-template-areas:"activity editor" "activity editor" "activity status";
 #side-bar{
 position:fixed;
 top:0;
-left:0;
+left:50px;
 width:280px;
 height:100vh;
 z-index:100;
