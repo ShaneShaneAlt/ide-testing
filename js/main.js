@@ -1,12 +1,10 @@
 // js/main.js
 import { getAllProjects, createNewProject } from './db.js';
+import { handleOnboarding } from './common.js'; // <-- Import from common.js
 
 window.addEventListener('DOMContentLoaded', () => {
-    // Check for onboarding
-    const onboardingComplete = localStorage.getItem('ryxide_onboarding_complete');
-    if (!onboardingComplete) {
-        showOnboarding();
-    }
+    // Check for onboarding using the common function
+    handleOnboarding();
 
     // Load and display projects
     loadProjects();
@@ -15,15 +13,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('create-project-btn').addEventListener('click', handleCreateProject);
 });
 
-function showOnboarding() {
-    const overlay = document.getElementById('onboarding-overlay');
-    overlay.classList.remove('hidden');
-
-    document.getElementById('start-onboarding-btn').addEventListener('click', () => {
-        localStorage.setItem('ryxide_onboarding_complete', 'true');
-        overlay.classList.add('hidden');
-    });
-}
+// The showOnboarding function is now removed from this file.
 
 async function loadProjects() {
     const projects = await getAllProjects();
@@ -46,9 +36,9 @@ async function loadProjects() {
 function createProjectCard(project) {
     const card = document.createElement('div');
     card.className = 'project-card';
-    card.dataset.projectId = project.id; // Store project ID on the element
+    card.dataset.projectId = project.id;
 
-    // A more modern card look
+    // Card structure remains the same
     card.innerHTML = `
         <div class="card-icon"><i class="fa-brands fa-html5"></i></div>
         <div class="card-content">
@@ -57,7 +47,6 @@ function createProjectCard(project) {
         </div>
     `;
     
-    // Navigate to IDE page on click
     card.addEventListener('click', () => {
         window.location.href = `ide.html?project=${project.id}`;
     });
@@ -69,9 +58,7 @@ async function handleCreateProject() {
     const projectName = prompt("Enter a name for your new project:", "My Awesome App");
     if (projectName) {
         try {
-            // THE FIX: Capture the returned ID from the creation function
             const newProjectId = await createNewProject(projectName, 'html');
-            // Now, redirect the user to the IDE page for that new project
             window.location.href = `ide.html?project=${newProjectId}`;
         } catch (error) {
             console.error("Failed to create project:", error);
