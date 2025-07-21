@@ -2,8 +2,12 @@ import { getProject, saveProject } from './db.js';
 let editor;
 let currentProject;
 let openFileTabs=[];
+let activeFileId=null;
+let term;
 const ideContainer=document.getElementById('ide-container');
 const editorTabsContainer=document.getElementById('editor-tabs');
+const searchInput=document.getElementById('search-input');
+const searchResultsContainer=document.getElementById('search-results');
 window.addEventListener('DOMContentLoaded', async ()=>{
 const urlParams=new URLSearchParams(window.location.search);
 const projectId=parseInt(urlParams.get('project'), 10);
@@ -16,6 +20,7 @@ currentProject=await getProject(projectId);
 if(currentProject){
 document.title=`${currentProject.name} - RyxIDE`;
 initializeEditor();
+initializeTerminal();
 renderFileTree();
 if(currentProject.files.length>0){
 openFileInEditor(currentProject.files[0].id);
@@ -48,7 +53,24 @@ editor.onDidChangeCursorPosition(e=>{
 const pos=e.position;
 document.getElementById('cursor-status').textContent=`Ln ${pos.lineNumber}, Col ${pos.column}`;
 });
+monaco.editor.onDidCreateModel(model => {
+model.onDidChangeContent(() => {
+updateProblemsPanel();
 });
+});
+});
+}
+function initializeTerminal(){
+term = new Terminal({
+cursorBlink: true,
+theme: {
+background: '#2a2a2a',
+foreground: '#e8e8e8',
+},
+fontFamily: 'var(--font-mono)'
+});
+term.open(document.getElementById('terminal-container'));
+term.write('RyxIDE Terminal (Bash loaded)\r\n$ ');
 }
 function setupUIEventListeners(){
 document.getElementById('run-btn').addEventListener('click', runCode);
@@ -89,6 +111,24 @@ closeFileTab(closeBtn.parentElement.dataset.fileId);
 openFileInEditor(tab.dataset.fileId);
 }
 });
+searchInput.addEventListener('input', (e) => performSearch(e.target.value));
+}
+function performSearch(query) {
+searchResultsContainer.innerHTML = '';
+if (!query || query.length < 2) {
+return;
+}
+const queryLower = query.toLowerCase();
+currentProject.files.forEach(file => {
+const lines = file.content.split('\n');
+lines.forEach((line, index) => {
+if (line.toLowerCase().includes(queryLower)) {
+const resultEl = document.createElement('div');
+resultEl.textContent = `${file.name}:${index + 1} - ${line.trim()}`;
+searchResultsContainer.appendChild(resultEl);
+}
+});
+});
 }
 function setActiveSidebarView(viewName){
 const sidebarTitle=document.getElementById('sidebar-title');
@@ -127,10 +167,18 @@ case 'js':return 'fa-brands fa-square-js';
 case 'py':return 'fa-brands fa-python';
 case 'php':return 'fa-brands fa-php';
 case 'ts':return 'fa-brands fa-node-js';
+case 'rb':return 'fa-solid fa-gem';
+case 'cs':return 'fa-solid fa-hashtag';
+case 'json':return 'fa-solid fa-code';
+case 'sql':return 'fa-solid fa-database';
+case 'md':return 'fa-brands fa-markdown';
+case 'xml':return 'fa-solid fa-file-code';
+case 'sh':return 'fa-solid fa-terminal';
 default:return 'fa-solid fa-file';
 }
 }
 function openFileInEditor(fileId){
+activeFileId = fileId;
 if(!openFileTabs.includes(fileId)){
 openFileTabs.push(fileId);
 }
@@ -140,20 +188,47 @@ el.classList.toggle('active', el.dataset.fileId===fileId);
 });
 const file=currentProject.files.find(f=>f.id===fileId);
 if(file&&editor){
-editor.setValue(file.content);
-const extension=file.name.split('.').pop();
-let language='plaintext';
+let model = monaco.editor.getModels().find(m => m.uri.toString() === file.id);
+if (!model) {
+model = monaco.editor.createModel(file.content, getLanguageForFile(file.name), monaco.Uri.parse(file.id));
+}
+editor.setModel(model);
+updateProblemsPanel();
+document.getElementById('language-status').textContent=getLanguageForFile(file.name).toUpperCase();
+}
+}
+function getLanguageForFile(filename) {
+const extension = filename.split('.').pop();
 switch(extension){
-case 'js':language='javascript';break;
-case 'html':language='html';break;
-case 'css':language='css';break;
-case 'py':language='python';break;
-case 'php':language='php';break;
-case 'ts':language='typescript';break;
+case 'js': return 'javascript';
+case 'html': return 'html';
+case 'css': return 'css';
+case 'py': return 'python';
+case 'php': return 'php';
+case 'ts': return 'typescript';
+case 'rb': return 'ruby';
+case 'cs': return 'csharp';
+case 'json': return 'json';
+case 'sql': return 'sql';
+case 'md': return 'markdown';
+case 'xml': return 'xml';
+case 'sh': return 'shell';
+default: return 'plaintext';
 }
-monaco.editor.setModelLanguage(editor.getModel(), language);
-document.getElementById('language-status').textContent=language.toUpperCase();
 }
+function updateProblemsPanel() {
+const problemsContainer = document.getElementById('problems-container');
+const model = editor.getModel();
+const markers = monaco.editor.getModelMarkers({ owner: model.getLanguageId() });
+if (markers.length === 0) {
+problemsContainer.innerHTML = '<p class="p-2">No problems have been detected.</p>';
+return;
+}
+let html = '';
+markers.forEach(marker => {
+html += `<div>Error: ${marker.message} at line ${marker.startLineNumber}</div>`;
+});
+problemsContainer.innerHTML = html;
 }
 function renderFileTabs(){
 editorTabsContainer.innerHTML='';
@@ -163,8 +238,7 @@ if(file){
 const tabEl=document.createElement('div');
 tabEl.className='tab';
 tabEl.dataset.fileId=file.id;
-const currentFileId=editor.getModel().uri.toString();
-if(file.id===currentFileId || openFileTabs.indexOf(fileId) === openFileTabs.length - 1){
+if(file.id===activeFileId){
 tabEl.classList.add('active');
 }
 tabEl.innerHTML=`
@@ -181,29 +255,57 @@ const index=openFileTabs.indexOf(fileId);
 if(index > -1){
 openFileTabs.splice(index, 1);
 }
-renderFileTabs();
-if(openFileTabs.length > 0){
-const lastFile=openFileTabs[openFileTabs.length - 1];
-openFileInEditor(lastFile);
+if(activeFileId === fileId) {
+activeFileId = openFileTabs.length > 0 ? openFileTabs[openFileTabs.length - 1] : null;
+}
+if(activeFileId){
+openFileInEditor(activeFileId);
 } else {
+editor.setModel(null);
 editor.setValue('// All files closed.');
-monaco.editor.setModelLanguage(editor.getModel(), 'plaintext');
+document.getElementById('language-status').textContent = '';
+renderFileTabs();
 }
 }
 function runCode(){
 if(!editor)return;
+const model=editor.getModel();
+if (!model) {
+alert("No active file to run!");
+return;
+}
 const code=editor.getValue();
-const language=editor.getModel().getLanguageId();
+const language=model.getLanguageId();
 const previewFrame=document.getElementById('preview-iframe');
 console.log(`Running code in language: ${language}`);
 ideContainer.classList.add('panel-visible');
 setActivePanel('preview');
 if(language==='html'){
+const htmlFile=currentProject.files.find(f => f.name.endsWith('.html'));
+const cssFile=currentProject.files.find(f => f.name.endsWith('.css'));
+const jsFile=currentProject.files.find(f => f.name.endsWith('.js'));
+let finalHtml=htmlFile ? htmlFile.content : '<h1>No index.html found</h1>';
+if(cssFile){
+finalHtml += `<style>${cssFile.content}</style>`;
+}
+if(jsFile){
+finalHtml += `<script>${jsFile.content}<\/script>`;
+}
 const doc=previewFrame.contentWindow.document;
 doc.open();
-doc.write(code);
+doc.write(finalHtml);
 doc.close();
-}else{
+} else if(language === 'javascript') {
+setActivePanel('terminal');
+term.clear();
+try {
+const result = eval(code);
+term.write(`> ${result}\r\n$ `);
+} catch(e) {
+term.write(`Error: ${e.message}\r\n$ `);
+}
+}
+else{
 alert(`Runner for "${language}" is not implemented yet.`);
 }
 }
