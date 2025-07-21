@@ -116,7 +116,7 @@ resolve();
 async function initializeTerminal(){
 console.log('[RDE:Terminal] Starting initialization.');
 try {
-await loadScript('https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js', 'Terminal');
+await loadScript('https://cdn.jsdelivr.net/npm/xterm@5.3.0/dist/xterm.js', 'Terminal');
 console.log('[RDE:Terminal] Xterm.js script loaded, creating terminal instance.');
 term = new Terminal({
 cursorBlink: true,
