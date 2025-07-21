@@ -10,6 +10,7 @@
     
     <!-- Our Shared Stylesheet -->
     <link rel="stylesheet" href="css/style.css">
+</head>
 <body>
 
     <!-- Onboarding Modal (Hidden by default) -->
@@ -23,7 +24,7 @@
                 <p>Let's get you started.</p>
             </div>
             <div class="modal-footer">
-                <button id="start-onboarding-btn">Let's Go!</button>
+                <button id="start-onboarding-btn" class="btn">Let's Go!</button>
             </div>
         </div>
     </div>
@@ -32,7 +33,7 @@
     <div id="dashboard-wrapper">
         <header id="dashboard-header">
             <div class="logo">
-                <i class="fa-brands fa-react"></i> <!-- Placeholder Logo -->
+                <i class="fa-solid fa-code"></i> <!-- Changed Icon -->
                 <h1>RyxIDE</h1>
             </div>
             <nav class="main-nav">
@@ -44,7 +45,8 @@
         <main id="projects-grid-container">
             <div class="projects-header">
                 <h2>My Projects</h2>
-                <button id="create-project-btn"><i class="fa-solid fa-plus"></i> Create Project</button>
+                <!-- THE FIX: Added class="btn" to style the button -->
+                <button id="create-project-btn" class="btn"><i class="fa-solid fa-plus"></i> Create Project</button>
             </div>
             <div id="projects-grid" class="grid">
                 <!-- Project cards will be injected here by JavaScript -->
