@@ -5,55 +5,47 @@ let currentProject;
 let openFileTabs=[];
 let activeFileId=null;
 let term;
+const runtimes = {
+python: { loaded: false, instance: null },
+php: { loaded: false, instance: null }
+};
 const ideContainer=document.getElementById('ide-container');
 const editorTabsContainer=document.getElementById('editor-tabs');
 const searchInput=document.getElementById('search-input');
 const searchResultsContainer=document.getElementById('search-results');
+const consoleContainer=document.getElementById('console-container');
 window.addEventListener('DOMContentLoaded', async ()=>{
-console.log('[RDE] DOMContentLoaded event fired.');
+logToIdeConsole('RDE Initializing...');
 const urlParams=new URLSearchParams(window.location.search);
 const projectId=parseInt(urlParams.get('project'), 10);
 if(!projectId){
-console.error('[RDE] No project ID found in URL.');
+logToIdeConsole('No project ID found in URL.', 'error');
 alert("No project ID specified!");
 window.location.href='index.html';
 return;
 }
-console.log(`[RDE] Project ID found: ${projectId}`);
+logToIdeConsole(`Project ID found: ${projectId}`);
 currentProject=await getProject(projectId);
 if(currentProject){
-console.log('[RDE] Project data loaded successfully:', currentProject);
+logToIdeConsole('Project data loaded successfully.');
 document.title=`${currentProject.name} - RyxIDE`;
-console.log('[RDE] Initializing editor...');
 await initializeEditor();
-console.log('[RDE] Editor initialized.');
-console.log('[RDE] Initializing terminal...');
 initializeTerminal();
-console.log('[RDE] Terminal initialized.');
-console.log('[RDE] Rendering file tree...');
 renderFileTree();
 if(currentProject.files.length>0){
-console.log('[RDE] Opening first file in project.');
 openFileInEditor(currentProject.files[0].id);
 }
 }else{
-console.error(`[RDE] Project with ID ${projectId} not found in database.`);
+logToIdeConsole(`Project with ID ${projectId} not found.`, 'error');
 alert("Project not found!");
 window.location.href='index.html';
 }
-console.log('[RDE] Setting up UI event listeners...');
 setupUIEventListeners();
-console.log('[RDE] UI setup complete.');
+logToIdeConsole('UI setup complete. Ready.');
 });
 async function initializeEditor(){
-console.log('[RDE:Editor] Starting initialization.');
 return new Promise((resolve) => {
-if(typeof monaco !== 'undefined' && editor){
-console.log('[RDE:Editor] Monaco already defined, skipping load.');
-resolve();
-return;
-}
-console.log('[RDE:Editor] Loading monaco via require.js');
+if(typeof monaco !== 'undefined' && editor) return resolve();
 require.config({ paths:{ 'vs':'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
 window.MonacoEnvironment={
 getWorkerUrl:function (workerId, label){
@@ -64,13 +56,16 @@ importScripts('https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/base/wor
 }
 };
 require(["vs/editor/editor.main"], function (){
-console.log('[RDE:Editor] Monaco module loaded, creating editor instance.');
 editor=monaco.editor.create(document.getElementById('editor-container'), {
 value:`// Select a file to begin coding`,
 language:'plaintext',
 theme:'vs-dark',
 automaticLayout:true,
-roundedSelection:true
+roundedSelection:true,
+scrollbar: {
+verticalScrollbarSize: 10,
+horizontalScrollbarSize: 10
+}
 });
 editor.onDidChangeCursorPosition(e=>{
 const pos=e.position;
@@ -81,42 +76,33 @@ model.onDidChangeContent(() => {
 updateProblemsPanel();
 });
 });
-console.log('[RDE:Editor] Editor instance created.');
+logToIdeConsole('Monaco Editor instance created.');
 resolve();
 });
 });
 }
 function initializeTerminal(){
-console.log('[RDE:Terminal] Starting initialization.');
 try {
 if (typeof jQuery === 'undefined' || typeof jQuery.fn.terminal === 'undefined') {
-console.error('[RDE:Terminal] CRITICAL: jQuery or jQuery.terminal is not defined.');
-const termContainer = document.getElementById('terminal-container');
-if(termContainer) termContainer.textContent = 'Error: Terminal library failed to load.';
+logToIdeConsole('jQuery or jQuery.terminal not found.', 'error');
 return;
 }
-console.log('[RDE:Terminal] jQuery.terminal is defined. Creating instance.');
-term = $('#terminal-container').terminal(function(command, term) {
-if (command !== '') {
-try {
-const result = window.eval(command);
-if (result !== undefined) {
-term.echo(String(result));
-}
-} catch(e) {
-term.error(new String(e));
-}
-} else {
-term.echo('');
-}
+term = $('#terminal-container div').terminal(async (command, term) => {
 }, {
 greetings: 'RyxIDE Terminal',
-prompt: '$ '
+prompt: '$ ',
 });
-console.log('[RDE:Terminal] Terminal instance created and opened successfully.');
+logToIdeConsole('jQuery Terminal instance created.');
 } catch (error) {
-console.error('[RDE:Terminal] CRITICAL: An error occurred during terminal initialization.', error);
+logToIdeConsole(`Terminal initialization failed: ${error.message}`, 'error');
 }
+}
+function logToIdeConsole(message, type = 'log') {
+const logEntry = document.createElement('div');
+logEntry.className = `console-${type}`;
+logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+consoleContainer.appendChild(logEntry);
+consoleContainer.scrollTop = consoleContainer.scrollHeight;
 }
 function setupUIEventListeners(){
 document.getElementById('run-btn').addEventListener('click', runCode);
@@ -130,15 +116,13 @@ ideContainer.addEventListener('click', (event)=>{
 const action=event.target.dataset.action;
 const view=event.target.dataset.view;
 if(action==='toggle-sidebar'){
-setActiveSidebarView(view);
-ideContainer.classList.add('sidebar-visible');
+ideContainer.classList.toggle('sidebar-collapsed');
 }
 if(action==='close-sidebar'||event.target.id==='mobile-overlay'){
-ideContainer.classList.remove('sidebar-visible');
-ideContainer.classList.remove('panel-visible');
+ideContainer.classList.add('sidebar-collapsed');
 }
 if(action==='toggle-panel'){
-ideContainer.classList.toggle('panel-visible');
+ideContainer.classList.toggle('panel-collapsed');
 }
 });
 document.getElementById('panel-tabs').addEventListener('click', (event)=>{
@@ -158,16 +142,39 @@ openFileInEditor(tab.dataset.fileId);
 }
 });
 searchInput.addEventListener('input', (e) => performSearch(e.target.value));
+document.querySelectorAll('.btn-install-runtime').forEach(btn => {
+btn.addEventListener('click', () => installRuntime(btn.dataset.runtime, btn));
+});
+}
+async function installRuntime(runtimeName, button){
+button.textContent = 'Installing...';
+button.disabled = true;
+logToIdeConsole(`Installing ${runtimeName} runtime...`);
+try {
+if(runtimeName === 'python') {
+const pyodideSrc = 'https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js';
+await import(pyodideSrc);
+runtimes.python.instance = await loadPyodide();
+runtimes.python.loaded = true;
+} else if (runtimeName === 'php') {
+const phpWasmSrc = 'https://cdn.jsdelivr.net/npm/php-wasm/PhpWasm.mjs';
+const { PhpWasm } = await import(phpWasmSrc);
+runtimes.php.instance = await PhpWasm.load('8.2', {นักพัฒนา: true});
+runtimes.php.loaded = true;
+}
+logToIdeConsole(`${runtimeName} runtime installed successfully.`);
+button.textContent = 'Installed';
+} catch(error) {
+logToIdeConsole(`Failed to install ${runtimeName}: ${error.message}`, 'error');
+button.textContent = 'Error';
+}
 }
 function performSearch(query) {
 searchResultsContainer.innerHTML = '';
-if (!query || query.length < 2) {
-return;
-}
+if (!query || query.length < 2) return;
 const queryLower = query.toLowerCase();
 currentProject.files.forEach(file => {
-const lines = file.content.split('\n');
-lines.forEach((line, index) => {
+file.content.split('\n').forEach((line, index) => {
 if (line.toLowerCase().includes(queryLower)) {
 const resultEl = document.createElement('div');
 resultEl.textContent = `${file.name}:${index + 1} - ${line.trim()}`;
@@ -177,7 +184,7 @@ searchResultsContainer.appendChild(resultEl);
 });
 }
 function setActiveSidebarView(viewName){
-console.log(`[RDE:UI] Setting active sidebar view to: ${viewName}`);
+logToIdeConsole(`Switching sidebar view to: ${viewName}`);
 const sidebarTitle=document.getElementById('sidebar-title');
 const activityBarIcons=document.querySelectorAll('#activity-bar i[data-view]');
 const sidebarViews=document.querySelectorAll('#sidebar-content .sidebar-view');
@@ -186,7 +193,7 @@ activityBarIcons.forEach(icon=>icon.classList.toggle('active', icon.dataset.view
 sidebarViews.forEach(view=>view.classList.toggle('active', view.id===`${viewName}-view`));
 }
 function setActivePanel(panelName){
-console.log(`[RDE:UI] Setting active panel to: ${panelName}`);
+logToIdeConsole(`Switching panel to: ${panelName}`);
 document.querySelectorAll('#panel-tabs .tab').forEach(tab=>{
 tab.classList.toggle('active', tab.dataset.panel===panelName);
 });
@@ -226,7 +233,7 @@ default:return 'fa-solid fa-file';
 }
 }
 function openFileInEditor(fileId){
-console.log(`[RDE:Editor] Opening file with ID: ${fileId}`);
+logToIdeConsole(`Opening file: ${fileId}`);
 activeFileId = fileId;
 if(!openFileTabs.includes(fileId)){
 openFileTabs.push(fileId);
@@ -239,7 +246,6 @@ const file=currentProject.files.find(f=>f.id===fileId);
 if(file&&editor){
 let model = monaco.editor.getModels().find(m => m.uri.toString() === file.id);
 if (!model) {
-console.log(`[RDE:Editor] Creating new model for ${file.name}`);
 model = monaco.editor.createModel(file.content, getLanguageForFile(file.name), monaco.Uri.parse(file.id));
 }
 editor.setModel(model);
@@ -268,21 +274,19 @@ default: return 'plaintext';
 }
 function updateProblemsPanel() {
 const problemsContainer = document.getElementById('problems-container');
+problemsContainer.innerHTML = '';
 const model = editor.getModel();
-if (!model) {
-problemsContainer.innerHTML = '<p class="p-2">No active file to analyze.</p>';
-return;
-}
+if (!model) return;
 const markers = monaco.editor.getModelMarkers({ resource: model.uri });
 if (markers.length === 0) {
 problemsContainer.innerHTML = '<p class="p-2">No problems have been detected.</p>';
 return;
 }
-let html = '';
 markers.forEach(marker => {
-html += `<div>Error: ${marker.message} at line ${marker.startLineNumber}</div>`;
+const el = document.createElement('div');
+el.textContent = `[${marker.severity}] ${marker.message} (Line: ${marker.startLineNumber}, Col: ${marker.startColumn})`;
+problemsContainer.appendChild(el);
 });
-problemsContainer.innerHTML = html;
 }
 function renderFileTabs(){
 editorTabsContainer.innerHTML='';
@@ -295,21 +299,14 @@ tabEl.dataset.fileId=file.id;
 if(file.id===activeFileId){
 tabEl.classList.add('active');
 }
-tabEl.innerHTML=`
-<i class="${getFileIcon(file.name)}"></i>
-<span>${file.name}</span>
-<i class="fa-solid fa-xmark tab-close"></i>
-`;
+tabEl.innerHTML=`<i class="${getFileIcon(file.name)}"></i><span>${file.name}</span><i class="fa-solid fa-xmark tab-close"></i>`;
 editorTabsContainer.appendChild(tabEl);
 }
 });
 }
 function closeFileTab(fileId){
-console.log(`[RDE:UI] Closing tab for file ID: ${fileId}`);
 const index=openFileTabs.indexOf(fileId);
-if(index > -1){
-openFileTabs.splice(index, 1);
-}
+if(index > -1) openFileTabs.splice(index, 1);
 if(activeFileId === fileId) {
 activeFileId = openFileTabs.length > 0 ? openFileTabs[openFileTabs.length - 1] : null;
 }
@@ -321,45 +318,86 @@ document.getElementById('language-status').textContent = '';
 renderFileTabs();
 }
 }
-function runCode(){
-if(!editor)return;
+async function runCode(){
+if(!editor) return;
 const model=editor.getModel();
-if (!model) {
-alert("No active file to run!");
-return;
-}
+if (!model) return alert("No active file to run!");
 const code=editor.getValue();
 const language=model.getLanguageId();
-const previewFrame=document.getElementById('preview-iframe');
-console.log(`[RDE:Runtime] Running code in language: ${language}`);
-ideContainer.classList.add('panel-visible');
+logToIdeConsole(`Executing code as ${language}...`);
+ideContainer.classList.remove('panel-collapsed');
+term.clear();
+setActivePanel('terminal');
+switch(language) {
+case 'html':
+runHtmlProject();
+break;
+case 'javascript':
+runJavascript(code);
+break;
+case 'python':
+await runPython(code);
+break;
+case 'php':
+await runPhp(code);
+break;
+default:
+logToIdeConsole(`Runner for "${language}" is not implemented yet.`, 'error');
+term.error(`Runner for "${language}" is not implemented yet.`);
+}
+}
+function runHtmlProject(){
 setActivePanel('preview');
-if(language==='html'){
-const htmlFile=currentProject.files.find(f => f.name.endsWith('.html'));
-const cssFile=currentProject.files.find(f => f.name.endsWith('.css'));
-const jsFile=currentProject.files.find(f => f.name.endsWith('.js'));
-let finalHtml=htmlFile ? htmlFile.content : '<h1>No index.html found</h1>';
+logToIdeConsole('Rendering HTML project in preview pane.');
+const htmlFile=currentProject.files.find(f => f.id === 'index.html');
+const cssFile=currentProject.files.find(f => f.id === 'style.css');
+const jsFile=currentProject.files.find(f => f.id === 'script.js');
+let finalHtml = htmlFile ? htmlFile.content : '<h1>No index.html found</h1>';
 if(cssFile){
 finalHtml += `<style>${cssFile.content}</style>`;
 }
 if(jsFile){
-finalHtml += `<script>${jsFile.content}<\/script>`;
+finalHtml += `<script type="module">${jsFile.content}<\/script>`;
 }
-const doc=previewFrame.contentWindow.document;
-doc.open();
-doc.write(finalHtml);
-doc.close();
-} else if(language === 'javascript') {
-setActivePanel('terminal');
-term.clear();
+const previewFrame=document.getElementById('preview-iframe');
+previewFrame.srcdoc = finalHtml;
+}
+function runJavascript(code){
+setActivePanel('console');
+logToIdeConsole('Running Javascript code...');
 try {
-const result = eval(code);
-term.echo(`> ${result}`);
+const result = (new Function(code))();
+logToIdeConsole(`Execution finished. Result: ${result}`);
+} catch(e) {
+logToIdeConsole(`Error: ${e.message}`, 'error');
+}
+}
+async function runPython(code) {
+if (!runtimes.python.loaded) {
+term.error("Python runtime not installed. Please install it from the Runtimes panel.");
+return;
+}
+logToIdeConsole('Executing Python code with Pyodide...');
+try {
+const pyodide = runtimes.python.instance;
+await pyodide.loadPackagesFromImports(code);
+const result = await pyodide.runPythonAsync(code);
+term.echo(String(result));
 } catch(e) {
 term.error(e.message);
 }
 }
-else{
-alert(`Runner for "${language}" is not implemented yet.`);
+async function runPhp(code) {
+if (!runtimes.php.loaded) {
+term.error("PHP runtime not installed. Please install it from the Runtimes panel.");
+return;
+}
+logToIdeConsole('Executing PHP code with php-wasm...');
+try {
+const php = runtimes.php.instance;
+const output = await php.run(code);
+term.echo(output.text);
+} catch(e) {
+term.error(e.message);
 }
 }
