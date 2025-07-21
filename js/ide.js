@@ -3,6 +3,7 @@ import { getProject, saveProject } from './db.js';
 
 let editor;
 let currentProject;
+const ideContainer = document.getElementById('ide-container');
 
 // --- INITIALIZATION ---
 window.addEventListener('DOMContentLoaded', async () => {
@@ -21,7 +22,6 @@ window.addEventListener('DOMContentLoaded', async () => {
         document.title = `${currentProject.name} - RyxIDE`;
         initializeEditor();
         renderFileTree();
-        // Open the first file by default
         if (currentProject.files.length > 0) {
             openFileInEditor(currentProject.files[0].id);
         }
@@ -30,18 +30,15 @@ window.addEventListener('DOMContentLoaded', async () => {
         window.location.href = 'index.html';
     }
 
-    setupEventListeners();
+    setupUIEventListeners();
 });
 
 function initializeEditor() {
-    // Monaco Editor's loader is available globally
     require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
     window.MonacoEnvironment = {
         getWorkerUrl: function (workerId, label) {
             return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-                self.MonacoEnvironment = {
-                    baseUrl: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/'
-                };
+                self.MonacoEnvironment = { baseUrl: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/' };
                 importScripts('https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/base/worker/workerMain.js');`
             )}`;
         }
@@ -51,12 +48,11 @@ function initializeEditor() {
         editor = monaco.editor.create(document.getElementById('editor-container'), {
             value: `// Welcome to RyxIDE\n// Select a file from the explorer to begin.`,
             language: 'javascript',
-            theme: 'vs-dark', // Default theme
+            theme: 'vs-dark',
             automaticLayout: true,
             roundedSelection: true
         });
 
-        // Update cursor position in status bar
         editor.onDidChangeCursorPosition(e => {
             const pos = e.position;
             document.getElementById('cursor-status').textContent = `Ln ${pos.lineNumber}, Col ${pos.column}`;
@@ -64,33 +60,56 @@ function initializeEditor() {
     });
 }
 
-function setupEventListeners() {
+// --- UI INTERACTIVITY ---
+function setupUIEventListeners() {
     document.getElementById('run-btn').addEventListener('click', runCode);
+    
+    // Use event delegation for dynamically created file items
+    document.getElementById('file-tree').addEventListener('click', (event) => {
+        const fileItem = event.target.closest('.file-item');
+        if (fileItem) {
+            openFileInEditor(fileItem.dataset.fileId);
+        }
+    });
+
+    // Handle clicks on the entire IDE container for actions
+    ideContainer.addEventListener('click', (event) => {
+        const action = event.target.dataset.action;
+        if (action === 'toggle-sidebar') {
+            ideContainer.classList.add('sidebar-visible');
+        }
+        if (action === 'close-sidebar' || event.target.id === 'mobile-overlay') {
+            ideContainer.classList.remove('sidebar-visible');
+            ideContainer.classList.remove('panel-visible');
+        }
+        if (action === 'toggle-panel') {
+            ideContainer.classList.toggle('panel-visible');
+        }
+    });
 }
 
-
-// --- UI RENDERING ---
 function renderFileTree() {
     const fileTreeContainer = document.getElementById('file-tree');
-    fileTreeContainer.innerHTML = ''; // Clear old tree
+    fileTreeContainer.innerHTML = '';
     currentProject.files.forEach(file => {
         const fileElement = document.createElement('div');
-        // Simple file item for now, can be improved later
         fileElement.textContent = file.name;
         fileElement.dataset.fileId = file.id;
-        fileElement.className = 'file-item'; // Add a class for styling
-        fileElement.addEventListener('click', () => openFileInEditor(file.id));
+        fileElement.className = 'file-item';
         fileTreeContainer.appendChild(fileElement);
     });
 }
 
-
 // --- CORE FUNCTIONALITY ---
 function openFileInEditor(fileId) {
+    // Visually mark the active file in the tree
+    document.querySelectorAll('#file-tree .file-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.fileId === fileId);
+    });
+
     const file = currentProject.files.find(f => f.id === fileId);
     if (file && editor) {
         editor.setValue(file.content);
-        // Set language based on file extension
         const extension = file.name.split('.').pop();
         let language = 'plaintext';
         switch (extension) {
@@ -108,23 +127,21 @@ function openFileInEditor(fileId) {
 
 function runCode() {
     if (!editor) return;
-
     const code = editor.getValue();
-    const model = editor.getModel();
-    const language = model.getLanguageId();
+    const language = editor.getModel().getLanguageId();
     const previewFrame = document.getElementById('preview-iframe');
 
     console.log(`Running code in language: ${language}`);
+    
+    // Show the panel when running code
+    ideContainer.classList.add('panel-visible');
 
     if (language === 'html') {
-        // Simple HTML/CSS/JS runner
-        // A more robust version would find the corresponding CSS/JS files
         const doc = previewFrame.contentWindow.document;
         doc.open();
         doc.write(code);
         doc.close();
     } else {
-        // Placeholder for other languages
         alert(`Runner for "${language}" is not implemented yet.`);
     }
 }
