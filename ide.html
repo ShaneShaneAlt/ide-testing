@@ -7,12 +7,13 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
 </head>
 <body>
 <div id="ide-container" class="ide-container">
 <nav id="activity-bar">
 <div class="action-items-top">
-<i class="fa-solid fa-files active" title="Explorer" data-action="toggle-sidebar" data-view="explorer"></i>
+<i class="fa-solid fa-folder-open active" title="Explorer" data-action="toggle-sidebar" data-view="explorer"></i>
 <i class="fa-solid fa-magnifying-glass" title="Search" data-action="toggle-sidebar" data-view="search"></i>
 <i class="fa-solid fa-puzzle-piece" title="Runtimes" data-action="toggle-sidebar" data-view="runtimes"></i>
 </div>
@@ -40,28 +41,39 @@
 <div id="file-tree" class="file-tree"></div>
 </div>
 <div id="search-view" class="sidebar-view">
-<p class="p-2">Search functionality coming soon.</p>
+<div class="search-container">
+<input type="text" id="search-input" placeholder="Search">
+<div id="search-results"></div>
+</div>
 </div>
 <div id="runtimes-view" class="sidebar-view">
 <div class="runtime-item">
 <div class="runtime-info">
 <i class="fa-brands fa-python"></i>
-<div>
-<h4>Python</h4>
-<p>Run .py files using Pyodide</p>
-</div>
+<div><h4>Python</h4><p>via Pyodide (~16 MB)</p></div>
 </div>
 <button class="btn-install-runtime" data-runtime="python">Install</button>
 </div>
 <div class="runtime-item">
 <div class="runtime-info">
-<i class="fa-brands fa-node-js"></i>
-<div>
-<h4>TypeScript</h4>
-<p>Transpile & run .ts files</p>
+<i class="fa-brands fa-php"></i>
+<div><h4>PHP</h4><p>via php-wasm (~4 MB)</p></div>
 </div>
+<button class="btn-install-runtime" data-runtime="php">Install</button>
 </div>
-<button class="btn-install-runtime" data-runtime="typescript">Install</button>
+<div class="runtime-item">
+<div class="runtime-info">
+<i class="fa-solid fa-gem"></i>
+<div><h4>Ruby</h4><p>via ruby-wasm (~6 MB)</p></div>
+</div>
+<button class="btn-install-runtime" data-runtime="ruby">Install</button>
+</div>
+<div class="runtime-item">
+<div class="runtime-info">
+<i class="fa-solid fa-hashtag"></i>
+<div><h4>C#</h4><p>via DotNet-WASM (TBD)</p></div>
+</div>
+<button class="btn-install-runtime" data-runtime="csharp" disabled>Soon</button>
 </div>
 </div>
 </div>
@@ -79,7 +91,7 @@
 <div class="panel-content">
 <div id="terminal-container" class="panel-view active"></div>
 <div id="preview-container" class="panel-view">
-<iframe id="preview-iframe" sandbox="allow-scripts allow-same-origin"></iframe>
+<iframe id="preview-iframe" sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock allow-popups allow-presentation allow-same-origin"></iframe>
 </div>
 <div id="problems-container" class="panel-view">
 <p class="p-2">No problems have been detected.</p>
