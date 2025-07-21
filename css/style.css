@@ -1,123 +1,207 @@
-/* --- 1. Global Setup & Theme --- */
+/* ==========================================================================
+   RyxIDE Universal Modern Stylesheet
+   ========================================================================== */
+
+/* --- 1. Global Setup & Modern Theme --- */
 :root {
-    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --font-mono: 'Fira Code', 'JetBrains Mono', 'Courier New', monospace;
-    --color-bg-deep: #1e1e1e;
-    --color-bg-medium: #252526;
-    --color-bg-light: #333333;
-    --color-border: #404040;
-    --color-text-primary: #cccccc;
-    --color-text-secondary: #8e8e8e;
-    --color-accent: #007acc;
-    --color-blue: #3b82f6;
-    --color-green: #10b981;
+
+    /* A more refined dark theme palette */
+    --bg-primary: #111827;      /* Very dark blue-gray (Tailwind Slate 900) */
+    --bg-secondary: #1f2937;    /* Darker blue-gray (Slate 800) */
+    --bg-tertiary: #374151;     /* Lighter blue-gray (Slate 700) */
+    --border-primary: #4b5563;  /* Soft border color (Slate 600) */
+    --text-primary: #f9fafb;     /* Off-white (Gray 50) */
+    --text-secondary: #9ca3af;   /* Muted gray (Gray 400) */
+    --accent-primary: #3b82f6;   /* A vibrant blue */
+    --accent-hover: #60a5fa;     /* A lighter blue for hover */
+    --danger-primary: #ef4444;   /* A clear red */
+    --danger-hover: #f87171;     /* A lighter red for hover */
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-body, html {
-    font-family: var(--font-sans);
-    background-color: var(--color-bg-deep);
-    color: var(--color-text-primary);
+html {
     font-size: 16px;
 }
 
-.hidden { display: none !important; }
+body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
 
-/* --- 2. Onboarding Modal Styles --- */
+.hidden {
+    display: none !important;
+}
+
+/* --- 2. Shared Components (Headers, Buttons, Modals) --- */
+#dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2.5rem;
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid var(--border-primary);
+}
+
+#dashboard-header .logo { display: flex; align-items: center; gap: 0.75rem; }
+#dashboard-header .logo i { font-size: 1.75rem; color: var(--accent-primary); }
+#dashboard-header .logo h1 { font-size: 1.25rem; font-weight: 600; }
+
+#dashboard-header .main-nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+#dashboard-header .main-nav a.active {
+    background-color: var(--accent-primary);
+    color: var(--text-primary);
+}
+#dashboard-header .main-nav a:not(.active):hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.btn {
+    background-color: var(--accent-primary);
+    color: var(--text-primary);
+    border: none;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s ease-in-out;
+}
+.btn:hover { background-color: var(--accent-hover); }
+
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.7);
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background-color: rgba(17, 24, 39, 0.8);
+    backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
 }
 .modal-content {
-    background-color: var(--color-bg-medium);
-    padding: 2rem;
-    border-radius: 8px;
+    background-color: var(--bg-secondary);
+    padding: 2.5rem;
+    border-radius: 12px;
     width: 90%;
     max-width: 500px;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--border-primary);
     text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
 }
 .modal-header h2 { font-size: 1.8rem; margin-bottom: 1rem; }
-.modal-body p { margin-bottom: 1rem; color: var(--color-text-secondary); line-height: 1.6; }
-.modal-footer button {
-    background-color: var(--color-accent);
-    color: white;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    font-size: 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-.modal-footer button:hover { background-color: #0098f7; }
+.modal-body p { margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.6; }
 
-/* --- 3. Projects Dashboard (index.html) Styles --- */
-#dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    background-color: var(--color-bg-medium);
-    border-bottom: 1px solid var(--color-border);
-}
-#dashboard-header .logo { display: flex; align-items: center; gap: 1rem; }
-#dashboard-header .logo i { font-size: 2rem; color: var(--color-accent); }
-#dashboard-header .main-nav a {
-    color: var(--color-text-secondary);
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
-}
-#dashboard-header .main-nav a.active, #dashboard-header .main-nav a:hover {
-    background-color: var(--color-bg-light);
-    color: var(--color-text-primary);
-}
+/* --- 3. Projects Page (index.html) --- */
+#projects-grid-container { padding: 2.5rem; max-width: 1400px; margin: 0 auto; }
 
-#projects-grid-container { padding: 2rem; max-width: 1200px; margin: 0 auto; }
 .projects-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
 }
-.projects-header h2 { font-size: 2rem; }
-.projects-header button {
-    background-color: var(--color-blue);
-    color: white;
-    border: none;
-    padding: 0.8rem 1.2rem;
-    font-size: 1rem;
-    border-radius: 5px;
-    cursor: pointer;
+.projects-header h2 { font-size: 2rem; font-weight: 600; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+
+.project-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-}
-
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
-.project-card {
-    background-color: var(--color-bg-medium);
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
+    gap: 1.5rem;
     padding: 1.5rem;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
-.project-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-.project-card i { font-size: 2.5rem; margin-bottom: 1rem; color: var(--color-green); }
-.project-card h3 { font-size: 1.2rem; margin-bottom: 0.5rem; }
-.project-card p { font-size: 0.9rem; color: var(--color-text-secondary); }
+.project-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-primary);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+.project-card .card-icon i {
+    font-size: 2rem;
+    color: var(--accent-primary);
+}
+.project-card h3 { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.25rem; }
+.project-card p { font-size: 0.875rem; color: var(--text-secondary); }
 
-#empty-state { text-align: center; grid-column: 1 / -1; color: var(--color-text-secondary); padding: 3rem; }
+#empty-state { text-align: center; grid-column: 1 / -1; color: var(--text-secondary); padding: 4rem; border: 2px dashed var(--border-primary); border-radius: 8px; }
 
-/* --- 4. IDE (ide.html) Styles - From Previous Step for when we build it --- */
-/* Add the full IDE CSS from the previous step here later */
+/* --- 4. Settings Page (settings.html) --- */
+#settings-container { padding: 2.5rem; max-width: 800px; margin: 0 auto; }
+#settings-container h1 {
+    margin-bottom: 2.5rem;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.settings-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+.settings-card h2 {
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: var(--bg-tertiary);
+}
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-top: 1px solid var(--border-primary);
+}
+.setting-item label { font-weight: 500; }
+.setting-item p { color: var(--text-secondary); }
+.setting-item select, .setting-item input {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    min-width: 150px;
+}
+.setting-item select:focus, .setting-item input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-primary_20); /* Requires a transparent accent color */
+}
+
+.danger-zone { border-color: var(--danger-primary); }
+.danger-zone h2 { color: var(--danger-primary); }
+.danger-btn { background-color: var(--danger-primary); }
+.danger-btn:hover { background-color: var(--danger-hover); }
+
+/* --- Placeholder for IDE Styles --- */
+/* We will add the IDE layout styles here in the next step */
