@@ -121,20 +121,17 @@ const target = event.target.closest('i[data-action="toggle-sidebar"]');
 if (target) {
 const currentView = target.dataset.view;
 const isMobile = window.innerWidth <= 800;
-if(isMobile) {
-if (ideContainer.classList.contains('sidebar-visible-mobile') && document.querySelector(`#${currentView}-view`).classList.contains('active')) {
-ideContainer.classList.remove('sidebar-visible-mobile');
-} else {
 setActiveSidebarView(currentView);
+if(isMobile) {
+if (ideContainer.classList.contains('sidebar-visible-mobile')) {
+if (document.querySelector('.sidebar-view.active').id.startsWith(currentView)) {
+ideContainer.classList.remove('sidebar-visible-mobile');
+}
+} else {
 ideContainer.classList.add('sidebar-visible-mobile');
 }
 } else {
-if (ideContainer.classList.contains('sidebar-collapsed') || !document.querySelector(`#${currentView}-view`).classList.contains('active')) {
-setActiveSidebarView(currentView);
-ideContainer.classList.remove('sidebar-collapsed');
-} else {
-ideContainer.classList.add('sidebar-collapsed');
-}
+ideContainer.classList.toggle('sidebar-collapsed');
 }
 }
 });
