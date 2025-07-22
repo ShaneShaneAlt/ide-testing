@@ -1,4 +1,3 @@
-// Abwah
 import { getProject, saveProject } from './db.js';
 console.log('[RDE] ide.js module loaded');
 let editor;
@@ -40,6 +39,7 @@ openFileInEditor(currentProject.files[0].id);
 logToIdeConsole(`Project with ID ${projectId} not found.`, 'error');
 alert("Project not found!");
 window.location.href='index.html';
+return;
 }
 setupUIEventListeners();
 logToIdeConsole('UI setup complete. Ready.');
@@ -138,7 +138,7 @@ ideContainer.classList.add('sidebar-collapsed');
 document.getElementById('side-bar').addEventListener('click', (event) => {
 const target = event.target.closest('i[data-action="close-sidebar"]');
 if (target) {
-ideContainer.classList.add('sidebar-collapsed');
+ideContainer.classList.remove('sidebar-visible-mobile');
 }
 });
 document.querySelector('.mobile-overlay').addEventListener('click', () => {
