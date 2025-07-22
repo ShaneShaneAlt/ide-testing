@@ -1,4 +1,3 @@
-// Wumbo???
 import { getProject, saveProject } from './db.js';
 console.log('[RDE] ide.js module loaded');
 let editor;
@@ -40,7 +39,6 @@ openFileInEditor(currentProject.files[0].id);
 logToIdeConsole(`Project with ID ${projectId} not found.`, 'error');
 alert("Project not found!");
 window.location.href='index.html';
-return;
 }
 setupUIEventListeners();
 logToIdeConsole('UI setup complete. Ready.');
