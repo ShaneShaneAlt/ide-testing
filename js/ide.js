@@ -1,4 +1,3 @@
-// yahoo
 import { getProject, saveProject } from './db.js';
 console.log('[RDE] ide.js module loaded');
 let editor;
@@ -36,13 +35,13 @@ renderFileTree();
 if(currentProject.files.length>0){
 openFileInEditor(currentProject.files[0].id);
 }
+setupUIEventListeners();
+logToIdeConsole('UI setup complete. Ready.');
 }else{
 logToIdeConsole(`Project with ID ${projectId} not found.`, 'error');
 alert("Project not found!");
 window.location.href='index.html';
 }
-setupUIEventListeners();
-logToIdeConsole('UI setup complete. Ready.');
 });
 async function initializeEditor(){
 return new Promise((resolve) => {
