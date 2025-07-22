@@ -1,4 +1,3 @@
-// Welp
 import { getProject, saveProject } from './db.js';
 console.log('[RDE] ide.js module loaded');
 let editor;
@@ -27,12 +26,7 @@ return;
 }
 logToIdeConsole(`Project ID found: ${projectId}`);
 currentProject=await getProject(projectId);
-if(!currentProject){
-logToIdeConsole(`Project with ID ${projectId} not found.`, 'error');
-alert("Project not found!");
-window.location.href='index.html';
-return;
-}
+if(currentProject){
 logToIdeConsole('Project data loaded successfully.');
 document.title=`${currentProject.name} - RyxIDE`;
 await initializeEditor();
@@ -40,6 +34,12 @@ initializeTerminal();
 renderFileTree();
 if(currentProject.files.length>0){
 openFileInEditor(currentProject.files[0].id);
+}
+}else{
+logToIdeConsole(`Project with ID ${projectId} not found.`, 'error');
+alert("Project not found!");
+window.location.href='index.html';
+return;
 }
 setupUIEventListeners();
 logToIdeConsole('UI setup complete. Ready.');
