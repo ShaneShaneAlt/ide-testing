@@ -685,7 +685,7 @@ opacity:0.5;
 #side-bar{
 position:absolute;
 height:100%;
-left:50px;
+left:0;
 transform:translateX(-100%);
 transition:transform 0.3s ease-in-out;
 }
@@ -697,13 +697,13 @@ box-shadow:5px 0 15px rgba(0,0,0,0.4);
 display:inline-block;
 }
 .mobile-overlay{
-position:fixed;
+position:absolute;
 top:0;
 left:0;
-width:100vw;
-height:100vh;
+width:100%;
+height:100%;
 background:rgba(0,0,0,0.5);
-z-index:240;
+z-index:150;
 display:none;
 }
 .ide-container.sidebar-visible-mobile .mobile-overlay{
