@@ -1,4 +1,4 @@
-// Bwuh
+// Abwah
 import { getProject, saveProject } from './db.js';
 console.log('[RDE] ide.js module loaded');
 let editor;
@@ -121,15 +121,17 @@ document.getElementById('activity-bar').addEventListener('click', (event) => {
 const target = event.target.closest('i[data-action="toggle-sidebar"]');
 if (target) {
 const currentView = target.dataset.view;
-const isCollapsed = ideContainer.classList.contains('sidebar-collapsed');
-const isDifferentView = !document.querySelector(`#${currentView}-view`).classList.contains('active');
-if (isCollapsed) {
-setActiveSidebarView(currentView);
-ideContainer.classList.remove('sidebar-collapsed');
-} else if (isDifferentView) {
+const isMobile = window.innerWidth <= 800;
+if(isMobile) {
+ideContainer.classList.add('sidebar-visible-mobile');
 setActiveSidebarView(currentView);
 } else {
+if (ideContainer.classList.contains('sidebar-collapsed') || !document.querySelector(`#${currentView}-view`).classList.contains('active')) {
+setActiveSidebarView(currentView);
+ideContainer.classList.remove('sidebar-collapsed');
+} else {
 ideContainer.classList.add('sidebar-collapsed');
+}
 }
 }
 });
@@ -138,6 +140,9 @@ const target = event.target.closest('i[data-action="close-sidebar"]');
 if (target) {
 ideContainer.classList.add('sidebar-collapsed');
 }
+});
+document.querySelector('.mobile-overlay').addEventListener('click', () => {
+ideContainer.classList.remove('sidebar-visible-mobile');
 });
 document.getElementById('panel-toggle-btn').addEventListener('click', () => {
 ideContainer.classList.toggle('panel-collapsed');
