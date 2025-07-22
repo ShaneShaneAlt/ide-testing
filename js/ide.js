@@ -1,3 +1,4 @@
+// yahoo
 import { getProject, saveProject } from './db.js';
 console.log('[RDE] ide.js module loaded');
 let editor;
@@ -39,7 +40,6 @@ openFileInEditor(currentProject.files[0].id);
 logToIdeConsole(`Project with ID ${projectId} not found.`, 'error');
 alert("Project not found!");
 window.location.href='index.html';
-return;
 }
 setupUIEventListeners();
 logToIdeConsole('UI setup complete. Ready.');
@@ -123,8 +123,12 @@ if (target) {
 const currentView = target.dataset.view;
 const isMobile = window.innerWidth <= 800;
 if(isMobile) {
-ideContainer.classList.add('sidebar-visible-mobile');
+if (ideContainer.classList.contains('sidebar-visible-mobile') && document.querySelector(`#${currentView}-view`).classList.contains('active')) {
+ideContainer.classList.remove('sidebar-visible-mobile');
+} else {
 setActiveSidebarView(currentView);
+ideContainer.classList.add('sidebar-visible-mobile');
+}
 } else {
 if (ideContainer.classList.contains('sidebar-collapsed') || !document.querySelector(`#${currentView}-view`).classList.contains('active')) {
 setActiveSidebarView(currentView);
