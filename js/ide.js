@@ -39,7 +39,6 @@ openFileInEditor(currentProject.files[0].id);
 logToIdeConsole(`Project with ID ${projectId} not found.`, 'error');
 alert("Project not found!");
 window.location.href='index.html';
-return;
 }
 setupUIEventListeners();
 logToIdeConsole('UI setup complete. Ready.');
@@ -121,9 +120,13 @@ document.getElementById('activity-bar').addEventListener('click', (event) => {
 const target = event.target.closest('i[data-action="toggle-sidebar"]');
 if (target) {
 const currentView = target.dataset.view;
-if (ideContainer.classList.contains('sidebar-collapsed') || document.querySelector(`#${currentView}-view`).classList.contains('active') === false) {
+const isCollapsed = ideContainer.classList.contains('sidebar-collapsed');
+const isDifferentView = !document.querySelector(`#${currentView}-view`).classList.contains('active');
+if (isCollapsed) {
 setActiveSidebarView(currentView);
 ideContainer.classList.remove('sidebar-collapsed');
+} else if (isDifferentView) {
+setActiveSidebarView(currentView);
 } else {
 ideContainer.classList.add('sidebar-collapsed');
 }
