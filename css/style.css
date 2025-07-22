@@ -1,3 +1,4 @@
+/* Abwah */
 :root{
 font-size:16px;
 --font-sans:'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -685,11 +686,14 @@ opacity:0.5;
 #side-bar{
 position:absolute;
 height:100%;
+left:0;
 z-index:250;
-transform:translateX(0);
+transform:translateX(calc(-100% + 50px));
+transition:transform 0.3s ease-in-out;
 }
-.ide-container.sidebar-collapsed #side-bar{
-transform:translateX(-100%);
+.ide-container.sidebar-visible-mobile #side-bar{
+transform:translateX(0);
+box-shadow:5px 0 15px rgba(0,0,0,0.4);
 }
 .sidebar-actions .fa-xmark{
 display:inline-block;
